@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="個人股票損益追蹤系統">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+<title>股票損益分析系統</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --bg2: #171b26;
+  --bg3: #1e2436;
+  --bg4: #252d42;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e8eaf0;
+  --text2: #8b92a8;
+  --text3: #535b72;
+  --green: #2dd4a0;
+  --green-dim: rgba(45,212,160,0.12);
+  --red: #f4604a;
+  --red-dim: rgba(244,96,74,0.12);
+  --blue: #4a9eff;
+  --blue-dim: rgba(74,158,255,0.12);
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.12);
+  --purple: #a78bfa;
+  --purple-dim: rgba(167,139,250,0.12);
+  --teal: #22d3ee;
+  --teal-dim: rgba(34,211,238,0.12);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --mono: 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.6; }
+
+/* ── Layout ── */
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 220px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+.main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.content { padding: 28px; flex: 1; }
+
+/* ── Sidebar ── */
+.logo { padding: 22px 20px 18px; border-bottom: 1px solid var(--border); }
+.logo-title { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: 0.3px; }
+.logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.nav { padding: 12px 10px; flex: 1; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); color: var(--text2); cursor: pointer; transition: all 0.15s; font-size: 13px; margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left; }
+.nav-item:hover { color: var(--text); background: var(--bg3); }
+.nav-item.active { color: var(--text); background: var(--bg4); font-weight: 500; }
+.nav-item .ico { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
+.nav-item.active .ico { opacity: 1; }
+.nav-section { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; padding: 10px 12px 4px; }
+.sidebar-bottom { padding: 14px; border-top: 1px solid var(--border); }
+.data-status { font-size: 11px; color: var(--text3); }
+.data-status span { color: var(--green); }
+
+/* ── Topbar ── */
+.page-title { font-size: 16px; font-weight: 600; }
+.topbar-actions { display: flex; gap: 8px; }
+.btn { padding: 7px 14px; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; border: 1px solid var(--border2); background: var(--bg3); color: var(--text); transition: all 0.15s; font-family: inherit; font-weight: 500; }
+.btn:hover { background: var(--bg4); border-color: rgba(255,255,255,0.2); }
+.btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+.btn-primary:hover { opacity: 0.88; }
+.btn-green { background: var(--green); color: #0a1f18; border-color: var(--green); font-weight: 600; }
+.btn-green:hover { opacity: 0.88; }
+
+/* ── Panels ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── Metric Cards ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; margin-bottom: 28px; }
+.metric-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; position: relative; overflow: hidden; }
+.metric-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+.metric-card.green::before { background: var(--green); }
+.metric-card.red::before { background: var(--red); }
+.metric-card.blue::before { background: var(--blue); }
+.metric-card.amber::before { background: var(--amber); }
+.metric-card.purple::before { background: var(--purple); }
+.metric-card.teal::before { background: var(--teal); }
+.metric-card .m-label { font-size: 11px; color: var(--text3); letter-spacing: 0.4px; margin-bottom: 8px; }
+.metric-card .m-value { font-size: 22px; font-weight: 600; font-family: var(--mono); }
+.metric-card .m-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.pos { color: var(--green) !important; }
+.neg { color: var(--red) !important; }
+.neu { color: var(--text) !important; }
+
+/* ── Charts ── */
+.charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 28px; }
+.chart-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.chart-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 16px; }
+.chart-wrap { position: relative; }
+
+/* ── Table ── */
+.table-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.table-toolbar { display: flex; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center; }
+.table-toolbar select, .table-toolbar input { background: var(--bg3); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius-sm); padding: 6px 10px; font-size: 12px; font-family: inherit; outline: none; }
+.table-toolbar select:focus, .table-toolbar input:focus { border-color: var(--blue); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+thead th { padding: 10px 14px; text-align: left; color: var(--text3); font-weight: 500; font-size: 11px; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); background: var(--bg2); position: sticky; top: 0; }
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+tbody tr:hover { background: var(--bg3); }
+tbody td { padding: 9px 14px; color: var(--text); }
+tbody tr:last-child { border-bottom: none; }
+.badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; letter-spacing: 0.2px; }
+.badge-現沖 { background: var(--blue-dim); color: var(--blue); }
+.badge-現股 { background: var(--green-dim); color: var(--green); }
+.badge-融資 { background: var(--amber-dim); color: var(--amber); }
+.badge-融券 { background: var(--purple-dim); color: var(--purple); }
+.badge-現金股利 { background: var(--teal-dim); color: var(--teal); }
+.badge-股票股利 { background: var(--red-dim); color: var(--red); }
+.badge-其他 { background: rgba(139,146,168,0.12); color: var(--text2); }
+.mono { font-family: var(--mono); }
+
+/* ── Stock Cards ── */
+.stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.stock-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; transition: border-color 0.15s; }
+.stock-card:hover { border-color: var(--border2); }
+.stock-card .sc-code { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-bottom: 2px; }
+.stock-card .sc-name { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+.stock-card .sc-pnl { font-size: 20px; font-weight: 600; font-family: var(--mono); }
+.stock-card .sc-ret { font-size: 12px; margin-top: 2px; }
+.stock-card .sc-meta { display: flex; gap: 14px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text3); }
+.stock-card .sc-meta span { display: flex; flex-direction: column; gap: 1px; }
+.stock-card .sc-meta b { color: var(--text2); font-weight: 500; }
+
+/* ── Monthly Table ── */
+.monthly-table-wrap { overflow-x: auto; }
+
+/* ── Import / Dividend ── */
+.import-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.form-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+.form-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 11px; color: var(--text3); margin-bottom: 5px; letter-spacing: 0.3px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius-sm); padding: 8px 11px; font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--blue); }
+.form-group textarea { height: 160px; resize: vertical; font-family: var(--mono); font-size: 11px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.result-msg { margin-top: 10px; font-size: 12px; padding: 8px 12px; border-radius: var(--radius-sm); }
+.result-msg.ok { background: var(--green-dim); color: var(--green); }
+.result-msg.err { background: var(--red-dim); color: var(--red); }
+
+/* ── Divider tables ── */
+.div-list { margin-top: 16px; }
+.div-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.div-item:last-child { border-bottom: none; }
+.div-item .di-left { display: flex; align-items: center; gap: 10px; }
+.div-item .di-right { font-family: var(--mono); font-weight: 500; }
+.div-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px; transition: color 0.15s; }
+.div-del:hover { color: var(--red); }
+
+/* ── Progress bar ── */
+.progress-bar { height: 4px; background: var(--bg4); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+.progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* ── Animations ── */
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+.panel.active { animation: fadeIn 0.2s ease; }
+
+/* ── Legend ── */
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .charts-row { grid-template-columns: 1fr; }
+  .import-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .sidebar { width: 56px; }
+  .sidebar .logo-title, .sidebar .logo-sub, .sidebar .nav-item span, .nav-section, .sidebar-bottom { display: none; }
+  .main { margin-left: 56px; }
+  .nav-item { justify-content: center; padding: 10px; }
+}
+
+/* Drop zones */
+#tradeDropZone:hover, #holdDropZone:hover { border-color: var(--blue); background: var(--blue-dim); }
+.drag-over { border-color: var(--green) !important; background: var(--green-dim) !important; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-title">股票損益系統</div>
+    <div class="logo-sub">Stock PnL Tracker</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">分析</div>
+    <button class="nav-item active" onclick="switchPanel('overview')">
+      <svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2zm7 0h5v5H9zM2 9h5v5H2zm7 0h5v5H9z"/></svg>
+      <span>總覽</span>
+    </button>
+    <button class="nav-item" onclick="switchPanel('holdings')">
+      <svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M1 12l4-5 3 3 4-6 3 4v4H1z"/></svg>
+      <span>未實現損益</span>
+    </button>
+    <button class="nav-item" onclick="switchPanel('detail')">
+      <svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3h14v1.5H1zm0 4h14v1.5H1zm0 4h14v1.5H1z"/></svg>
+      <span>交易明細</span>
+    </button>
+    <button class="nav-item" onclick="switchPanel('stock')">
+      <svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M1 12l4-5 3 3 4-6 3 4v4H1z"/></svg>
+      <span>個股分析</span>
+    </button>
+    <button class="nav-item" onclick="switchPanel('monthly')">
+      <svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1h12a1 1 0 011 1v12a1 1 0 01-1 1H2a1 1 0 01-1-1V2a1 1 0 011-1zm1 4v8h10V5H3zm1-3v2h2V2H4zm6 0v2h2V2h-2z"/></svg>
+      <span>月度分析</span>
+    </button>
+    <div class="nav-section">股利</div>
+    <button class="nav-item" onclick="switchPanel('dividend')">
+      <svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 110 14A7 7 0 018 1zm0 2a5 5 0 100 10A5 5 0 008 3zm1 2v1.5h1.5v1.5H9V9.5h1.5V11H9v1H7v-1H5.5V9.5H7V8H5.5V6.5H7V5h2z"/></svg>
+      <span>股利記錄</span>
+    </button>
+    <div class="nav-section">資料</div>
+    <button class="nav-item" onclick="switchPanel('import')">
+      <svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1v8.5l-3-3L3.5 8 8 12.5l4.5-4.5L11 6.5l-3 3V1H8zM1 14h14v1.5H1V14z"/></svg>
+      <span>匯入數據</span>
+    </button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="data-status" id="dataStatus">尚無資料</div>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title" id="pageTitle">總覽</div>
+    <div class="topbar-actions">
+      <button class="btn" onclick="exportCSV()">匯出 CSV</button>
+      <label class="btn btn-primary" style="cursor:pointer;margin:0" title="上傳已實現.xlsx">
+        📊 匯入已實現
+        <input type="file" id="quickTradeFile" accept=".xlsx,.xls" style="display:none" onchange="quickImportTrades(this.files[0])">
+      </label>
+      <label class="btn" style="cursor:pointer;margin:0;background:var(--teal);color:#0a1f1f;border-color:var(--teal);font-weight:600" title="上傳未實現.xlsx">
+        📈 匯入未實現
+        <input type="file" id="quickHoldFile" accept=".xlsx,.xls" style="display:none" onchange="quickImportHoldings(this.files[0])">
+      </label>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── Overview ── -->
+    <div id="panel-overview" class="panel active">
+      <div class="metrics-grid" id="metricsGrid"></div>
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">月度損益走勢（含股利）</div>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>交易盈利</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>交易虧損</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>股利收入</div>
+          </div>
+          <div class="chart-wrap" style="height:220px"><canvas id="monthlyChart" role="img" aria-label="月度損益走勢圖"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">交易類型分佈</div>
+          <div class="chart-wrap" style="height:160px"><canvas id="typeChart" role="img" aria-label="交易類型圓餅圖"></canvas></div>
+          <div id="typeStats" style="margin-top:12px;font-size:12px;"></div>
+        </div>
+      </div>
+      <div class="charts-row" style="grid-template-columns:1fr 1fr">
+        <div class="chart-card">
+          <div class="chart-title">損益分佈（勝/負）</div>
+          <div class="chart-wrap" style="height:180px"><canvas id="distChart" role="img" aria-label="損益分佈圖"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">股利收入分析</div>
+          <div class="chart-wrap" style="height:180px"><canvas id="divChart" role="img" aria-label="股利收入圖"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Holdings ── -->
+    <div id="panel-holdings" class="panel">
+      <div id="holdingsSummary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:20px"></div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <input type="text" id="holdSearch" placeholder="搜尋代號/名稱..." oninput="renderHoldings()" style="width:160px">
+          <select id="holdSort" onchange="renderHoldings()">
+            <option value="pnl_desc">損益高→低</option>
+            <option value="pnl_asc">損益低→高</option>
+            <option value="ret_desc">報酬率高→低</option>
+            <option value="mktval_desc">市值高→低</option>
+          </select>
+          <span id="holdCount" style="margin-left:auto;font-size:11px;color:var(--text3)"></span>
+        </div>
+        <div class="table-wrap" style="max-height:600px;overflow-y:auto">
+          <table>
+            <thead><tr>
+              <th>代號</th><th>名稱</th><th>類別</th>
+              <th style="text-align:right">庫存</th><th style="text-align:right">現價</th>
+              <th style="text-align:right">市值</th><th style="text-align:right">成本</th>
+              <th style="text-align:right">均價</th><th style="text-align:right">手續費</th>
+              <th style="text-align:right">利息</th>
+              <th style="text-align:right">未實現損益</th><th style="text-align:right">報酬率</th>
+            </tr></thead>
+            <tbody id="holdingsBody"></tbody>
+          </table>
+        </div>
+        <div id="holdingsSumRow" style="padding:10px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);display:flex;gap:20px;flex-wrap:wrap"></div>
+      </div>
+    </div>
+
+
+    <!-- ── Detail ── -->
+    <div id="panel-detail" class="panel">
+      <div class="table-card">
+        <div class="table-toolbar">
+          <select id="filterStock" onchange="renderDetail()"><option value="">全部股票</option></select>
+          <select id="filterType" onchange="renderDetail()"><option value="">全部類型</option></select>
+          <select id="filterMonth" onchange="renderDetail()"><option value="">全部月份</option></select>
+          <select id="filterPnl" onchange="renderDetail()">
+            <option value="">盈虧篩選</option>
+            <option value="win">獲利</option>
+            <option value="loss">虧損</option>
+          </select>
+          <input type="text" id="searchInput" placeholder="搜尋代號/名稱..." oninput="renderDetail()" style="width:150px">
+          <span id="tradeCount" style="margin-left:auto;font-size:11px;color:var(--text3)"></span>
+        </div>
+        <div class="table-wrap" style="max-height:580px;overflow-y:auto">
+          <table>
+            <thead><tr>
+              <th>代號</th><th>名稱</th><th>成交日期</th><th>類型</th>
+              <th style="text-align:right">賣價</th><th style="text-align:right">買價</th>
+              <th style="text-align:right">數量</th><th style="text-align:right">手續費</th>
+              <th style="text-align:right">交易稅</th><th style="text-align:right">盈虧</th>
+              <th style="text-align:right">報酬率</th>
+            </tr></thead>
+            <tbody id="detailBody"></tbody>
+          </table>
+        </div>
+        <div id="detailSummary" style="padding:12px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);display:flex;gap:20px;"></div>
+      </div>
+    </div>
+
+    <!-- ── Stock ── -->
+    <div id="panel-stock" class="panel">
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+        <select id="stockSort" onchange="renderStockCards()" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:6px 10px;font-size:12px;font-family:inherit;outline:none">
+          <option value="pnl">排序：損益高→低</option>
+          <option value="pnl_asc">排序：損益低→高</option>
+          <option value="ret">排序：報酬率高→低</option>
+          <option value="count">排序：交易筆數</option>
+        </select>
+        <span id="stockSummary" style="font-size:12px;color:var(--text3)"></span>
+      </div>
+      <div id="stockGrid" class="stock-grid"></div>
+    </div>
+
+    <!-- ── Monthly ── -->
+    <div id="panel-monthly" class="panel">
+      <div class="table-card">
+        <div class="table-wrap">
+          <table id="monthlyDataTable">
+            <thead><tr>
+              <th>月份</th><th style="text-align:right">交易筆數</th>
+              <th style="text-align:right">月損益</th><th style="text-align:right">報酬率</th>
+              <th style="text-align:right">勝率</th><th style="text-align:right">現金股利</th>
+              <th style="text-align:right">股票股利(股)</th><th style="text-align:right">月總收益</th>
+              <th style="text-align:right">累計損益</th>
+            </tr></thead>
+            <tbody id="monthlyBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Dividend ── -->
+    <div id="panel-dividend" class="panel">
+      <div class="import-grid">
+        <div class="form-card">
+          <h3>新增現金股利</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>股票代號</label>
+              <input type="text" id="divCode" placeholder="例：2330">
+            </div>
+            <div class="form-group">
+              <label>股票名稱</label>
+              <input type="text" id="divName" placeholder="例：台積電">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>發放日期</label>
+              <input type="date" id="divDate">
+            </div>
+            <div class="form-group">
+              <label>持有股數</label>
+              <input type="number" id="divShares" placeholder="例：1000">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>每股現金股利（元）</label>
+              <input type="number" id="divCashPerShare" placeholder="例：3.5" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>稅後實收金額（元）</label>
+              <input type="number" id="divCashNet" placeholder="自動計算或手動輸入">
+            </div>
+          </div>
+          <button class="btn btn-green" onclick="addCashDiv()" style="width:100%">新增現金股利</button>
+          <div id="cashDivMsg" class="result-msg" style="display:none"></div>
+        </div>
+        <div class="form-card">
+          <h3>新增股票股利</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>股票代號</label>
+              <input type="text" id="sdivCode" placeholder="例：2330">
+            </div>
+            <div class="form-group">
+              <label>股票名稱</label>
+              <input type="text" id="sdivName" placeholder="例：台積電">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>發放日期</label>
+              <input type="date" id="sdivDate">
+            </div>
+            <div class="form-group">
+              <label>持有股數（股）</label>
+              <input type="number" id="sdivShares" placeholder="例：1000">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>每千股配股數（股）</label>
+              <input type="number" id="sdivRate" placeholder="例：50" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>實際獲配股數</label>
+              <input type="number" id="sdivGot" placeholder="自動計算">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>參考股價（估算市值用，元）</label>
+            <input type="number" id="sdivPrice" placeholder="例：1000" step="0.1">
+          </div>
+          <button class="btn btn-green" onclick="addStockDiv()" style="width:100%">新增股票股利</button>
+          <div id="stockDivMsg" class="result-msg" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="form-card" style="margin-top:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <h3 style="margin-bottom:0">股利記錄</h3>
+          <div style="font-size:12px;color:var(--text2)">
+            現金股利合計：<span id="totalCashDiv" class="pos" style="font-family:var(--mono)">$0</span>
+            ｜股票股利合計：<span id="totalStockDiv" class="teal" style="color:var(--teal);font-family:var(--mono)">0股</span>
+          </div>
+        </div>
+        <div id="divList" class="div-list"></div>
+      </div>
+    </div>
+
+    <!-- ── Import ── -->
+    <div id="panel-import" class="panel">
+      <div class="import-grid">
+
+        <!-- LEFT: Trade + Holdings upload -->
+        <div>
+          <!-- ── 已實現對帳單 ── -->
+          <div class="form-card" style="margin-bottom:14px">
+            <h3>匯入已實現對帳單</h3>
+
+            <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:14px">
+              <button id="tabExcelBtn" onclick="switchImportTab('excel')" style="padding:7px 18px;font-size:13px;cursor:pointer;border-bottom:2px solid var(--blue);color:var(--text);font-weight:500;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit">📊 Excel 上傳</button>
+              <button id="tabTextBtn" onclick="switchImportTab('text')" style="padding:7px 18px;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);background:none;border-top:none;border-left:none;border-right:none;font-family:inherit">📋 貼上文字</button>
+            </div>
+
+            <div id="importTabExcel">
+              <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.7">
+                直接上傳券商 Excel 對帳單（.xlsx / .xls）。自動解析代號、名稱、成交日期、交易類別、賣/買價、數量、成本、手續費、交易稅、盈虧，並自動偵測「沒賣出回補手續費」及「融資追繳」等特殊行加入調整紀錄。
+              </p>
+              <div id="tradeDropZone" onclick="document.getElementById('tradeFileInput').click()" style="border:2px dashed var(--border2);border-radius:var(--radius);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px">
+                <div style="font-size:32px;margin-bottom:8px">📂</div>
+                <div style="font-size:13px;font-weight:500;margin-bottom:4px">點擊選擇或拖放 Excel 檔案</div>
+                <div style="font-size:11px;color:var(--text3)">.xlsx 或 .xls 格式</div>
+              </div>
+              <input type="file" id="tradeFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleTradeFile(this.files[0])">
+              <div id="tradeSheetSelect" style="display:none;margin-bottom:10px">
+                <div class="form-group"><label>選擇工作表</label>
+                  <select id="tradeSheetName" onchange="previewTradeSheet()" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:7px 10px;font-size:13px;font-family:inherit;outline:none"></select>
+                </div>
+              </div>
+              <div id="tradePreview" style="display:none;margin-bottom:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px">
+                <div id="tradePreviewText" style="color:var(--text2);font-size:12px"></div>
+              </div>
+              <div class="form-group"><label>匯入方式</label>
+                <select id="importMode" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:7px 10px;font-size:13px;font-family:inherit;outline:none">
+                  <option value="append">新增（保留現有資料）</option>
+                  <option value="replace">取代（清除並重新匯入）</option>
+                </select>
+              </div>
+              <button class="btn btn-green" id="tradeImportBtn" onclick="importFromExcel()" style="width:100%" disabled>請先上傳 Excel 檔案</button>
+            </div>
+
+            <div id="importTabText" style="display:none">
+              <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.7">從 Excel 複製貼上（Tab 分隔）。格式：代號 名稱 成交日期 委託書號 類別 賣價 成交日期 委託書號 類別 買價 數量 沖銷成本 手續費 交易稅 盈虧</p>
+              <div class="form-group">
+                <textarea id="importText" placeholder="在此貼上對帳單..."></textarea>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-primary" onclick="importData()" style="flex:1">匯入並分析</button>
+                <button class="btn" onclick="loadSample()">載入範例</button>
+              </div>
+            </div>
+            <div id="importMsg" class="result-msg" style="display:none;margin-top:10px"></div>
+          </div>
+
+          <!-- ── 未實現損益 ── -->
+          <div class="form-card">
+            <h3>匯入未實現損益</h3>
+
+            <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:14px">
+              <button id="tabHoldExcelBtn" onclick="switchHoldTab('excel')" style="padding:7px 18px;font-size:13px;cursor:pointer;border-bottom:2px solid var(--blue);color:var(--text);font-weight:500;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit">📊 Excel 上傳</button>
+              <button id="tabHoldTextBtn" onclick="switchHoldTab('text')" style="padding:7px 18px;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);background:none;border-top:none;border-left:none;border-right:none;font-family:inherit">📋 貼上文字</button>
+            </div>
+
+            <div id="holdTabExcel">
+              <p style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.7">上傳券商未實現損益 Excel，系統自動識別欄位（庫存、現價、市值、成本、均價、損益、報酬率等）。</p>
+              <div id="holdDropZone" onclick="document.getElementById('holdFileInput').click()" style="border:2px dashed var(--border2);border-radius:var(--radius);padding:22px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:10px">
+                <div style="font-size:26px;margin-bottom:6px">📂</div>
+                <div style="font-size:13px;font-weight:500;margin-bottom:3px">點擊選擇或拖放 Excel 檔案</div>
+                <div style="font-size:11px;color:var(--text3)">.xlsx 或 .xls 格式</div>
+              </div>
+              <input type="file" id="holdFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleHoldFile(this.files[0])">
+              <div id="holdSheetSelect" style="display:none;margin-bottom:10px">
+                <div class="form-group"><label>選擇工作表</label>
+                  <select id="holdSheetName" onchange="previewHoldSheet()" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:7px 10px;font-size:13px;font-family:inherit;outline:none"></select>
+                </div>
+              </div>
+              <div id="holdPreview" style="display:none;margin-bottom:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px">
+                <div id="holdPreviewText" style="color:var(--text2);font-size:12px"></div>
+              </div>
+              <button class="btn btn-green" id="holdImportBtn" onclick="importHoldingsFromExcel()" style="width:100%" disabled>請先上傳 Excel 檔案</button>
+            </div>
+
+            <div id="holdTabText" style="display:none">
+              <p style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.7">格式：Tab分隔，欄位順序：代號 名稱 類別 庫存數量 現價 市值 成本金額 平均單價 手續費 交易稅 利息 損益 報酬率 幣別</p>
+              <div class="form-group">
+                <textarea id="holdingsText" placeholder="在此貼上未實現損益資料..."></textarea>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-primary" onclick="importHoldings()" style="flex:1">匯入持倉</button>
+                <button class="btn" onclick="loadHoldingsSample()">載入範例</button>
+              </div>
+            </div>
+            <div id="holdingsMsg" class="result-msg" style="display:none;margin-top:8px"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Data management -->
+        <div class="form-card">
+          <h3>資料管理</h3>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:16px">目前系統資料狀態</div>
+          <div id="dataInfo" style="font-size:13px;line-height:2;color:var(--text2)"></div>
+          <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px">
+            <button class="btn" onclick="exportCSV()" style="text-align:left">📥 匯出交易明細 CSV</button>
+            <button class="btn" onclick="exportDivCSV()" style="text-align:left">📥 匯出股利記錄 CSV</button>
+            <button class="btn" onclick="exportHoldingsCSV()" style="text-align:left">📥 匯出持倉資料 CSV</button>
+            <button class="btn" onclick="exportAdjCSV()" style="text-align:left">📥 匯出調整紀錄 CSV</button>
+            <hr style="border:none;border-top:1px solid var(--border);margin:4px 0">
+            <button class="btn" onclick="if(confirm('確定清除所有交易資料？'))clearTrades()" style="text-align:left;color:var(--red)">🗑 清除所有交易資料</button>
+            <button class="btn" onclick="if(confirm('確定清除所有股利資料？'))clearDividends()" style="text-align:left;color:var(--red)">🗑 清除所有股利資料</button>
+          </div>
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)">
+            資料儲存於瀏覽器 localStorage，清除快取會遺失資料，建議定期匯出 CSV 備份。
+          </div>
+        </div>
+
+      </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════
+const SAMPLE = `4903\t聯光通\t2024/5/10\tJ0188\t現股\t20.2\t2024/5/9\t0\t現股\t0\t2000\t38990\t20\t121\t1269
+4903\t聯光通\t2024/5/10\tJ0197\t現股\t20.15\t2024/5/9\t0\t現股\t0\t2000\t38989\t20\t120\t1171
+6669\t緯穎\t2024/5/13\tJ0543\t現沖\t2390\t2024/5/13\tf0978\t現沖\t2390\t1000\t2390681\t681\t3585\t-4947
+6669\t緯穎\t2024/5/13\tf0594\t現沖\t2410\t2024/5/13\tf0982\t現沖\t2390\t1000\t2390681\t686\t3615\t15018
+2606\t裕民\t2024/5/14\tJ0940\t現股\t61\t2024/5/8\tf1904\t現股\t57.3\t1000\t57320\t20\t183\t3477
+6669\t緯穎\t2024/5/14\tJ0617\t現沖\t2435\t2024/5/14\tJ0850\t現沖\t2445\t1000\t2445696\t693\t3652\t-15041
+6669\t緯穎\t2024/5/14\tJ1091\t現沖\t2465\t2024/5/14\tf1006\t現沖\t2420\t1000\t2420689\t702\t3697\t39912
+6669\t緯穎\t2024/5/14\tf0102\t現沖\t2410\t2024/5/14\tf0982\t現沖\t2420\t1000\t2420689\t686\t3615\t-14990
+6669\t緯穎\t2024/5/16\tJ0636\t現沖\t2655\t2024/5/16\tJ0502\t現沖\t2640\t1000\t2640752\t756\t3982\t9510
+6669\t緯穎\t2024/5/16\tJ2074\t現沖\t2655\t2024/5/16\tJ2048\t現沖\t2640\t1000\t2640752\t756\t3982\t9510
+6669\t緯穎\t2024/5/17\tf0823\t現沖\t2640\t2024/5/17\tf1212\t現沖\t2630\t1000\t2630749\t752\t3960\t4539
+6669\t緯穎\t2024/5/17\tf0928\t現沖\t2650\t2024/5/17\tf2003\t現沖\t2620\t1000\t2620746\t755\t3975\t24524
+6669\t緯穎\t2024/5/20\tJ0907\t現股\t2590\t2024/5/20\t0\t現股\t0\t1000\t0\t738\t7770\t2581492
+6669\t緯穎\t2024/5/20\tf0967\t現股\t2575\t2024/5/20\t0\t現股\t0\t1000\t0\t733\t7725\t2566542
+6117\t迎廣\t2024/5/21\tJ0366\t融資\t94\t2024/5/8\tf1900\t融資\t87\t1000\t87024\t26\t282\t6572
+3033\t威健\t2024/5/21\tf0920\t融資\t38.5\t2024/5/20\tf0488\t融資\t37.5\t1000\t37520\t20\t115\t841
+6669\t緯穎\t2024/5/21\tJ0171\t現沖\t2620\t2024/5/21\tJ0246\t現沖\t2600\t1000\t2600741\t746\t3930\t14583
+6669\t緯穎\t2024/5/21\tJ0759\t現沖\t2600\t2024/5/21\tf0895\t現沖\t2575\t1000\t2575733\t741\t3900\t19626
+2330\t台積電\t2024/5/22\tf1046\t融資\t850\t2024/5/20\tf0333\t融資\t834\t1000\t834237\t242\t2550\t12800
+6669\t緯穎\t2024/5/22\tJ1098\t現沖\t2585\t2024/5/22\tf1389\t現沖\t2570\t1000\t2570732\t736\t3877\t9655
+6669\t緯穎\t2024/5/22\tf1333\t現沖\t2595\t2024/5/22\tJ1172\t現沖\t2575\t1000\t2575733\t739\t3892\t14636
+2362\t藍天\t2024/5/22\tf0222\t融資\t61\t2024/5/16\tf0644\t融資\t59\t1000\t59020\t20\t183\t1753
+6669\t緯穎\t2024/5/23\tf0542\t現沖\t2640\t2024/5/23\to0001\t現沖\t2740\t1000\t2740780\t752\t3960\t-105492
+6669\t緯穎\t2024/5/23\tf1008\t現沖\t2660\t2024/5/23\to0001\t現沖\t2740\t1000\t2740781\t758\t3990\t-85529
+6669\t緯穎\t2024/5/24\tJ0399\t現沖\t2745\t2024/5/24\tJ0535\t現沖\t2805\t1000\t2805799\t782\t4117\t-65698
+6669\t緯穎\t2024/5/24\tJ1098\t現沖\t2740\t2024/5/24\tJ0521\t現沖\t2800\t1000\t2800798\t780\t4110\t-65688
+6669\t緯穎\t2024/5/24\tf1930\t現沖\t2750\t2024/5/24\tJ0978\t現沖\t2815\t1000\t2815802\t783\t4125\t-70710
+8069\t元太\t2024/5/28\tf1117\t現股\t229\t2024/5/7\t0\t現股\t0\t1000\t211000\t65\t687\t17248
+2317\t鴻海\t2024/5/28\tf0979\t融資\t186\t2024/5/14\tJ1369\t融資\t169\t1000\t169048\t53\t558\t16099
+2362\t藍天\t2024/5/28\tf1073\t融資\t62.9\t2024/5/16\tf0658\t融資\t59.1\t1000\t59120\t20\t188\t3512
+6669\t緯穎\t2024/5/29\tf0185\t融券\t2660\t2024/5/23\tf1216\t融券\t2680\t1000\t2669053\t758\t0\t8406
+6669\t緯穎\t2024/5/29\tf0573\t現沖\t2700\t2024/5/29\tJ1263\t現沖\t2670\t1000\t2670760\t769\t4050\t24421
+6669\t緯穎\t2024/5/30\tJ0597\t現沖\t2680\t2024/5/30\tJ0632\t現沖\t2665\t1000\t2665759\t763\t4020\t9458
+1102\t亞泥\t2024/6/3\tf2138\t融資\t41.85\t2024/5/13\tJ0521\t融資\t45.6\t1000\t45620\t20\t125\t-4012
+1815\t富喬\t2024/6/7\tJ1439\t現股\t27.5\t2024/5/23\tf0976\t現股\t24.75\t1000\t24770\t20\t82\t2628
+2330\t台積電\t2024/6/13\tJ0781\t融資\t932\t2024/5/30\tf0314\t融資\t843\t1000\t843240\t265\t2796\t84488
+6669\t緯穎\t2024/6/18\tJ2245\t融資\t2710\t2024/5/30\tJ1419\t融資\t2640\t1000\t2640752\t772\t8130\t55735
+3048\t益登\t2024/6/19\tf0172\t現沖\t43.05\t2024/6/19\tf0189\t現沖\t42.5\t2000\t85024\t24\t129\t923
+2454\t聯發科\t2024/6/19\tJ2123\t現股\t1480\t2024/5/7\t0\t現股\t0\t1000\t930000\t421\t4440\t545139
+3035\t智原\t2024/6/21\tJ1900\t現股\t333\t2024/5/7\t0\t現股\t0\t1000\t414223\t94\t999\t-82316
+6669\t緯穎\t2024/6/24\tf0742\t融券\t2730\t2024/6/19\tf0204\t融券\t2795\t1000\t2783583\t778\t0\t52950
+2542\t興富發\t2024/6/24\tJ1604\t融資\t53.5\t2024/6/20\tf0769\t融資\t51.5\t1000\t51520\t20\t160\t1790
+6669\t緯穎\t2024/6/25\tf1369\t現沖\t2600\t2024/6/25\tf1139\t現沖\t2600\t1000\t2600741\t741\t3900\t-5382
+6669\t緯穎\t2024/6/25\tf1372\t現沖\t2605\t2024/6/25\tf1304\t現沖\t2575\t1000\t2575733\t742\t3907\t24618
+3081\t聯亞\t2024/6/25\tJ0975\t融資\t159\t2024/6/20\tJ1075\t融資\t154\t1000\t154043\t45\t477\t4388
+9904\t寶成\t2024/6/25\tJ0950\t融資\t37.5\t2024/5/8\tf0828\t融資\t36\t1000\t36020\t20\t112\t1175
+3048\t益登\t2024/6/26\tJ0495\t融資\t39.5\t2024/6/14\tJ0753\t融資\t39\t2000\t78022\t22\t237\t639
+3048\t益登\t2024/6/26\tJ0514\t融資\t39.6\t2024/6/14\tJ0753\t融資\t39\t1000\t39011\t20\t118\t412
+6669\t緯穎\t2024/6/27\tf2397\t現沖\t2545\t2024/6/27\tf2395\t現沖\t2555\t1000\t2555728\t725\t3817\t-15270
+6669\t緯穎\t2024/6/28\tJ0908\t現沖\t2645\t2024/6/28\tf0875\t現沖\t2620\t1000\t2620746\t753\t3967\t19534
+2367\t燿華\t2024/6/28\tJ1059\t現股\t36.85\t2024/6/4\tJ1757\t現股\t36.8\t1000\t36820\t20\t110\t-100
+3048\t益登\t2024/7/1\tJ0358\t融資\t40.9\t2024/6/14\tJ0796\t融資\t38.95\t2000\t77922\t23\t245\t3492
+3048\t益登\t2024/7/1\tJ0366\t現股\t40.95\t2024/6/14\tJ0760\t現股\t38.9\t2000\t77822\t23\t245\t3810
+3035\t智原\t2024/7/1\tJ0374\t現股\t336\t2024/5/7\t0\t現股\t0\t1000\t414223\t95\t1008\t-79326
+2359\t所羅門\t2024/7/2\tf0743\t融資\t170.5\t2024/5/16\tJ0277\t融資\t130\t1000\t130037\t48\t511\t39403
+2359\t所羅門\t2024/7/2\tf0743\t融資\t170.5\t2024/5/23\tf0750\t融資\t177.5\t1000\t177550\t49\t512\t-8184
+3450\t聯鈞\t2024/7/2\tf0358\t融資\t130\t2024/5/16\tJ0189\t融資\t69.8\t1000\t69820\t37\t390\t59437
+2330\t台積電\t2024/7/3\tf0710\t融資\t973\t2024/6/13\tf1262\t融資\t916\t1000\t916261\t277\t2919\t51851
+6669\t緯穎\t2024/7/3\tJ0639\t現沖\t2620\t2024/7/3\tJ0317\t現沖\t2665\t1000\t2665759\t746\t3930\t-50435
+6669\t緯穎\t2024/7/3\tJ0644\t現沖\t2620\t2024/7/3\tf0478\t現沖\t2635\t1000\t2635750\t746\t3930\t-20426
+2330\t台積電\t2024/7/4\tJ0684\t融資\t1000\t2024/6/14\tJ1030\t融資\t910\t1000\t910259\t285\t3000\t84586
+6669\t緯穎\t2024/7/4\tf1378\t融資\t2690\t2024/6/24\tJ1628\t融資\t2720\t1000\t2720775\t766\t8070\t-42964
+2317\t鴻海\t2024/7/4\tf0414\t融資\t211.5\t2024/7/2\tf0475\t融資\t209.5\t1000\t209559\t60\t634\t1161
+3013\t晟銘電\t2024/7/5\tf0842\t融資\t89\t2024/6/3\tf2153\t融資\t93.8\t1000\t93826\t25\t267\t-5386
+2354\t鴻準\t2024/7/5\tJ0388\t融資\t70.7\t2024/5/30\tJ0966\t融資\t73.9\t1000\t73921\t20\t212\t-3724
+2330\t台積電\t2024/7/9\to0006\t融資\t1040\t2024/6/21\tf2148\t融資\t969\t1000\t969276\t296\t3120\t65716
+2401\t凌陽\t2024/7/9\to0003\t融資\t37.7\t2024/5/29\tJ1433\t融資\t36.8\t1000\t36820\t20\t113\t593
+6669\t緯穎\t2024/7/9\tf2454\t現沖\t2685\t2024/7/9\tf2461\t現沖\t2670\t1000\t2670760\t765\t4027\t9448
+6117\t迎廣\t2024/7/10\tf0664\t融資\t119\t2024/6/5\tJ1083\t融資\t150\t1000\t150042\t33\t357\t-31971
+1815\t富喬\t2024/7/10\tf0639\t融資\t26.1\t2024/7/2\tf0665\t融資\t25.5\t1000\t25520\t20\t78\t466
+8033\t雷虎\t2024/7/10\tf0680\t現股\t68.6\t2024/5/8\t0\t現股\t0\t1000\t80500\t20\t205\t-12125
+6669\t緯穎\t2024/7/10\tf0843\t現沖\t2620\t2024/7/10\tJ0382\t現沖\t2660\t1000\t2660758\t746\t3930\t-45434
+6669\t緯穎\t2024/7/11\tf0305\t現沖\t2580\t2024/7/11\tJ0199\t現沖\t2575\t1000\t2575733\t735\t3870\t-338
+6669\t緯穎\t2024/7/11\tf0720\t現沖\t2530\t2024/7/11\tf0611\t現沖\t2560\t1000\t2560729\t721\t3795\t-35245
+3048\t益登\t2024/7/12\tJ1870\t融資\t51.4\t2024/7/5\tf1072\t融資\t53\t1000\t53020\t20\t154\t-1825
+1815\t富喬\t2024/7/12\to0006\t現股\t26.45\t2024/5/30\tf0782\t現股\t27.5\t1000\t27520\t20\t79\t-1169
+6669\t緯穎\t2024/7/12\tJ2965\t現沖\t2440\t2024/7/12\tJ1062\t現沖\t2470\t1000\t2470703\t695\t3660\t-35058
+6669\t緯穎\t2024/7/12\tJ2965\t現沖\t2440\t2024/7/12\tJ2958\t現沖\t2430\t1000\t2430692\t695\t3660\t4953
+6643\tM31\t2024/7/17\tJ2057\t融資\t1455\t2024/6/24\tJ1658\t融資\t1270\t1000\t1270361\t414\t4365\t176859
+2359\t所羅門\t2024/7/17\tJ1073\t融資\t172\t2024/5/24\tJ0358\t融資\t172\t1000\t172049\t49\t516\t-1380
+6669\t緯穎\t2024/7/17\tJ0436\t現沖\t2425\t2024/7/17\tf0934\t現沖\t2455\t1000\t2455699\t691\t3637\t-35027
+6669\t緯穎\t2024/7/17\tJ2393\t現沖\t2380\t2024/7/17\tf1159\t現沖\t2450\t1000\t2450698\t678\t3570\t-74946
+8054\t安國\t2024/7/29\tf0418\t融資\t190\t2024/5/17\tf0831\t融資\t162.5\t1000\t162546\t54\t570\t25845
+8054\t安國\t2024/7/29\tf0421\t現股\t190\t2024/5/7\t0\t現股\t0\t1000\t224000\t54\t570\t-34624
+2330\t台積電\t2024/7/30\tf0302\t現沖\t935\t2024/7/30\tJ0144\t現沖\t931\t1000\t931265\t266\t1402\t2067
+6669\t緯穎\t2024/7/30\tf0181\t現沖\t1960\t2024/7/30\tf0397\t現沖\t1965\t1000\t1965560\t558\t2940\t-9058
+6669\t緯穎\t2024/7/30\tf0380\t現沖\t1985\t2024/7/30\tf0401\t現沖\t1960\t1000\t1960558\t565\t2977\t20900
+2330\t台積電\t2024/7/31\tJ0441\t現沖\t938\t2024/7/31\tf0182\t現沖\t931\t1000\t931265\t267\t1407\t5061
+6669\t緯穎\t2024/7/31\tJ0414\t現沖\t2005\t2024/7/31\tf0279\t現沖\t1970\t1000\t1970561\t571\t3007\t30861
+2330\t台積電\t2024/8/5\tf0469\t現沖\t848\t2024/8/5\tf0360\t現沖\t843\t1000\t843240\t241\t1272\t3247
+2330\t台積電\t2024/8/5\tf0484\t現沖\t849\t2024/8/5\tf0344\t現沖\t841\t1000\t841239\t241\t1273\t6247
+2609\t陽明\t2024/8/5\tJ2998\t融資\t60\t2024/6/7\tJ1799\t融資\t82.5\t1000\t82523\t20\t180\t-23116
+4543\t萬在\t2024/8/5\tJ0945\t融資\t46.95\t2024/5/29\tf0526\t融資\t72\t1000\t72020\t20\t140\t-25731
+2330\t台積電\t2024/8/6\tJ1207\t現股\t860\t2024/5/7\t0\t現股\t0\t1000\t690500\t245\t2580\t166675
+6669\t緯穎\t2024/8/6\tJ1439\t現沖\t1800\t2024/8/6\tJ1430\t現沖\t1745\t1000\t1745497\t513\t2700\t51290
+2317\t鴻海\t2024/8/7\tf0299\t現股\t170\t2024/5/8\t0\t現股\t0\t1000\t152000\t48\t510\t17442
+6669\t緯穎\t2024/8/8\tJ0672\t現沖\t1865\t2024/8/8\tJ0708\t現沖\t1840\t1000\t1840524\t531\t2797\t21148
+6669\t緯穎\t2024/8/14\tf0528\t現沖\t1960\t2024/8/14\tJ0277\t現沖\t2000\t1000\t2000510\t499\t2940\t-43949
+2330\t台積電\t2024/8/19\tJ0315\t現沖\t975\t2024/8/19\tf0128\t現沖\t965\t1000\t965246\t248\t1462\t8044
+2330\t台積電\t2024/8/20\tJ0147\t現沖\t973\t2024/8/20\tJ0130\t現沖\t975\t1000\t975248\t248\t1459\t-3955
+6669\t緯穎\t2024/8/29\tf1040\t現沖\t1900\t2024/8/29\tJ1437\t現沖\t1910\t1000\t1910487\t484\t2850\t-13821
+2330\t台積電\t2024/9/24\tf1470\t融資\t980\t2024/6/25\tf0163\t融資\t929\t1000\t929264\t249\t2940\t38868
+2330\t台積電\t2024/9/24\tf1470\t融資\t980\t2024/7/2\tf0422\t融資\t960\t1000\t960273\t249\t2940\t8253
+2330\t台積電\t2024/9/24\tf1470\t融資\t980\t2024/7/18\tJ0518\t融資\t997\t1000\t997284\t251\t2940\t-27233
+2330\t台積電\t2024/9/25\tJ0574\t現股\t1000\t2024/7/5\tJ0161\t現股\t1005\t1000\t1005286\t255\t3000\t-8541
+2330\t台積電\t2024/9/25\tJ0574\t現股\t1000\t2024/9/18\tJ0838\t現股\t940\t1000\t940239\t255\t3000\t56506
+2436\t偉詮電\t2024/9/25\tJ1738\t現股\t68\t2024/9/24\tf1908\t現股\t64\t2000\t128032\t34\t408\t7526
+2436\t偉詮電\t2024/9/25\tJ1738\t現股\t68\t2024/9/24\tJ1594\t現股\t63.8\t1000\t63816\t18\t204\t3962
+2454\t聯發科\t2024/9/25\tJ0597\t融資\t1225\t2024/8/7\tJ1054\t融資\t1130\t1000\t1130322\t312\t3675\t85002
+2436\t偉詮電\t2024/9/26\tJ0770\t現股\t68\t2024/9/24\tJ1594\t現股\t63.8\t1000\t63816\t17\t204\t3963
+2436\t偉詮電\t2024/9/26\tJ0770\t現股\t68\t2024/9/24\tJ1596\t現股\t63.1\t1000\t63120\t17\t204\t4659
+6243\t迅杰\t2024/9/27\tJ0855\t現股\t58.1\t2024/5/7\t0\t現股\t0\t3000\t255901\t44\t522\t-82167
+6243\t迅杰\t2024/9/27\tJ0860\t現股\t58.2\t2024/5/7\t0\t現股\t0\t1000\t85300\t20\t174\t-27294
+6243\t迅杰\t2024/9/27\tJ0863\t現股\t58.3\t2024/5/7\t0\t現股\t0\t1000\t85300\t20\t174\t-27194
+2436\t偉詮電\t2024/9/27\tJ0875\t現股\t65.5\t2024/9/24\tJ1598\t現股\t63.1\t1000\t63120\t20\t196\t2164
+6669\t緯穎\t2024/9/27\tJ0812\t現股\t1825\t2024/9/18\tf0339\t現股\t1750\t1000\t1750446\t465\t5475\t68614
+6669\t緯穎\t2024/9/27\tf0809\t現股\t1815\t2024/9/18\tf0339\t現股\t1750\t1000\t1750446\t462\t5445\t58647
+2330\t台積電\t2024/9/30\tf1032\t融券\t980\t2024/9/27\tf2290\t融券\t1005\t1000\t1000925\t249\t0\t20686
+6117\t迎廣\t2024/10/1\tf2020\t融資\t98.3\t2024/6/5\tf2250\t融資\t146\t1000\t146041\t25\t294\t-49818
+3048\t益登\t2024/10/1\tf0544\t融資\t37.6\t2024/7/5\tf1076\t融資\t53\t1000\t53020\t20\t112\t-15935
+2330\t台積電\t2024/10/4\tf0265\t現沖\t980\t2024/10/4\tf0836\t現沖\t977\t1000\t977249\t249\t1470\t1032
+2330\t台積電\t2024/10/4\tf0418\t現沖\t984\t2024/10/4\tf0407\t現沖\t978\t1000\t978249\t250\t1476\t4025
+2330\t台積電\t2024/10/7\tf0397\t現股\t1000\t2024/9/18\tJ0838\t現股\t940\t1000\t940240\t255\t3000\t56505
+2317\t鴻海\t2024/10/16\tf0581\t融資\t207\t2024/7/22\tJ0598\t融資\t195\t1000\t195055\t52\t621\t9589
+2317\t鴻海\t2024/10/16\tf0584\t融資\t207.5\t2024/7/26\tJ0437\t融資\t191\t1000\t191054\t52\t622\t14210
+2317\t鴻海\t2024/10/16\tf0585\t融資\t206.5\t2024/7/12\tJ1863\t融資\t217\t1000\t217061\t52\t619\t-13324
+2317\t鴻海\t2024/10/17\tJ1668\t現股\t208\t2024/10/11\tf0161\t現股\t200.5\t1000\t200551\t53\t624\t6772
+2449\t京元電子\t2024/11/5\tf0621\t現股\t130\t2024/10/11\tf0216\t現股\t128.5\t1000\t128532\t33\t390\t1045
+2449\t京元電子\t2024/11/5\tf0622\t現股\t131\t2024/10/11\tJ0524\t現股\t125.5\t1000\t125532\t33\t393\t5042
+2449\t京元電子\t2024/11/5\tf0624\t現股\t130.5\t2024/10/11\tf0207\t現股\t128\t1000\t128032\t33\t391\t2044
+3450\t聯鈞\t2024/11/6\tf0237\t融資\t250\t2024/10/17\tJ0652\t融資\t228\t1000\t228058\t63\t750\t20778
+3706\t神達\t2024/11/15\tJ1175\t融資\t70.5\t2024/11/13\tJ0671\t融資\t63.7\t1000\t63720\t20\t211\t6523
+00680L\t元大美債20正2\t2024/11/28\tf0891\t現股\t8.4\t2024/11/27\tf0986\t現股\t8.29\t1000\t8310\t20\t8\t62
+00688L\t國泰20年美債正2\t2024/11/28\tf0896\t現股\t8.35\t2024/11/27\tf0964\t現股\t8.25\t1000\t8270\t20\t8\t52
+6669\t緯穎\t2024/12/2\tf0179\t現沖\t1965\t2024/12/2\tJ0279\t現沖\t1950\t1000\t1950497\t501\t2947\t11055
+2603\t長榮\t2024/12/4\tf0374\t融資\t230\t2024/5/31\tf1965\t融資\t217\t1000\t217061\t58\t690\t8073
+2330\t台積電\t2024/12/6\tf0266\t融券\t1070\t2024/10/4\tf2378\t融券\t971\t1000\t967064\t272\t0\t-102572
+6669\t緯穎\t2024/12/9\tJ0770\t現沖\t2495\t2024/12/9\tf0496\t現沖\t2475\t1000\t2475631\t636\t3742\t14991
+6669\t緯穎\t2024/12/13\tJ0749\t現股\t2520\t2024/12/10\tf1312\t現股\t2450\t1000\t2450624\t642\t7560\t61174
+6669\t緯穎\t2024/12/16\tf0422\t現股\t2570\t2024/12/10\tJ1416\t現股\t2440\t1000\t2440622\t655\t7710\t121013
+2330\t台積電\t2024/12/25\tJ0582\t融資\t1090\t2024/12/10\tf1264\t融資\t1060\t1000\t1060270\t277\t3270\t24549
+2449\t京元電子\t2024/12/25\tJ0389\t融資\t117\t2024/11/13\tJ0517\t融資\t128\t1000\t128032\t29\t351\t-11959
+2359\t所羅門\t2024/12/25\tJ0364\t融資\t171.5\t2024/6/4\tf1909\t融資\t168\t1000\t168047\t43\t514\t-38
+6669\t緯穎\t2024/12/25\tJ0338\t現股\t2600\t2024/12/18\tJ1408\t現股\t2550\t1000\t2550650\t663\t7800\t40887
+2330\t台積電\t2024/12/26\tf0387\t融資\t1090\t2024/12/17\tJ1245\t融資\t1080\t1000\t1080275\t277\t3270\t4957
+2332\t友訊\t2024/12/27\tJ1043\t現股\t26\t2024/12/23\tJ1167\t現股\t25.7\t1000\t25720\t20\t78\t182
+6669\t緯穎\t2024/12/27\tf0430\t融資\t2600\t2024/7/3\tJ0626\t融資\t2610\t1000\t2610743\t663\t7800\t-62607`;
+
+let trades = [];
+let dividends = [];
+let charts = {};
+const SKIP_TYPES = ['匯撥','追繳','現償'];
+
+// ═══ Storage ═══
+function save() {
+  try {
+    localStorage.setItem('stock_trades', JSON.stringify(trades));
+    localStorage.setItem('stock_divs', JSON.stringify(dividends));
+  } catch(e) {}
+}
+function load() {
+  try {
+    const t = localStorage.getItem('stock_trades');
+    const d = localStorage.getItem('stock_divs');
+    if (t) trades = JSON.parse(t);
+    if (d) dividends = JSON.parse(d);
+  } catch(e) {}
+}
+
+// ═══ Parse ═══
+function parseTSV(raw) {
+  const lines = raw.trim().split('\n');
+  const result = [];
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const cols = line.split('\t');
+    if (cols.length < 15) continue;
+    const [code, name, sellDate, , type, sellPrice, , , , buyPrice, qty, cost, fee, tax, pnl] = cols;
+    if (!code || !code.match(/^\d{4,6}|^[A-Z0-9]+/)) continue;
+    const pnlN = parseFloat((pnl||'').replace(/,/g,''));
+    if (isNaN(pnlN)) continue;
+    if (SKIP_TYPES.some(s => (type||'').includes(s))) continue;
+    const sp = parseFloat(sellPrice)||0, bp = parseFloat(buyPrice)||0;
+    const qN = parseInt((qty||'').replace(/,/g,''))||0;
+    const cN = parseFloat((cost||'').replace(/,/g,''))||0;
+    const fN = parseFloat((fee||'').replace(/,/g,''))||0;
+    const tN = parseFloat((tax||'').replace(/,/g,''))||0;
+    const base = cN > 0 ? cN : bp * qN;
+    result.push({ code:code.trim(), name:name.trim(), sellDate:sellDate.trim(), type:(type||'').trim(), sellPrice:sp, buyPrice:bp, qty:qN, cost:cN, fee:fN, tax:tN, pnl:pnlN, returnRate: base > 0 ? pnlN/base*100 : 0 });
+  }
+  return result;
+}
+
+// ═══ Format ═══
+const fmt = n => Math.round(n).toLocaleString('zh-TW');
+const fmtPct = n => (n>0?'+':'')+n.toFixed(2)+'%';
+const cc = n => n>0?'pos':n<0?'neg':'';
+function getMonth(d) {
+  const p = (d||'').replace(/\//g,'-').split('-');
+  return p[0]+'/'+String(p[1]).padStart(2,'0');
+}
+
+// ═══ Nav ═══
+const PAGE_TITLES = { overview:'總覽', detail:'交易明細', stock:'個股分析', monthly:'月度分析', dividend:'股利記錄', import:'匯入數據' };
+function switchPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelector(`.nav-item[onclick="switchPanel('${name}')"]`).classList.add('active');
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[name];
+}
+
+// ═══ Metrics ═══
+function renderMetrics() {
+  const total = trades.reduce((s,t) => s+t.pnl, 0);
+  const totalCost = trades.reduce((s,t) => s+(t.cost>0?t.cost:t.buyPrice*t.qty), 0);
+  const totalFee = trades.reduce((s,t) => s+t.fee, 0);
+  const totalTax = trades.reduce((s,t) => s+t.tax, 0);
+  const wins = trades.filter(t => t.pnl>0).length;
+  const wr = trades.length ? wins/trades.length*100 : 0;
+  const ret = totalCost > 0 ? total/totalCost*100 : 0;
+  const maxWin = trades.length ? Math.max(...trades.map(t=>t.pnl)) : 0;
+  const maxLoss = trades.length ? Math.min(...trades.map(t=>t.pnl)) : 0;
+  const cashDiv = dividends.filter(d=>d.kind==='cash').reduce((s,d)=>s+d.net,0);
+  const stockDivShares = dividends.filter(d=>d.kind==='stock').reduce((s,d)=>s+d.gotShares,0);
+  const grandTotal = total + cashDiv;
+
+  document.getElementById('metricsGrid').innerHTML = `
+    <div class="metric-card green"><div class="m-label">交易總損益</div><div class="m-value ${cc(total)}">${total>=0?'+':''}${fmt(total)}</div><div class="m-sub">${trades.length} 筆交易</div></div>
+    <div class="metric-card ${cc(ret)==='pos'?'green':'red'}"><div class="m-label">交易報酬率</div><div class="m-value ${cc(ret)}">${fmtPct(ret)}</div><div class="m-sub">以成本計算</div></div>
+    <div class="metric-card blue"><div class="m-label">勝率</div><div class="m-value neu">${wr.toFixed(1)}%</div><div class="m-sub">${wins}勝 ${trades.length-wins}負</div></div>
+    <div class="metric-card teal"><div class="m-label">現金股利收入</div><div class="m-value pos">+${fmt(cashDiv)}</div><div class="m-sub">${dividends.filter(d=>d.kind==='cash').length} 筆</div></div>
+    <div class="metric-card purple"><div class="m-label">股票股利</div><div class="m-value neu">${stockDivShares.toLocaleString('zh-TW')} 股</div><div class="m-sub">${dividends.filter(d=>d.kind==='stock').length} 筆</div></div>
+    <div class="metric-card ${cc(grandTotal)==='pos'?'green':'red'}"><div class="m-label">總收益（含股利）</div><div class="m-value ${cc(grandTotal)}">${grandTotal>=0?'+':''}${fmt(grandTotal)}</div><div class="m-sub">交易+現金股利</div></div>
+    <div class="metric-card amber"><div class="m-label">最大單筆獲利</div><div class="m-value pos">+${fmt(maxWin)}</div></div>
+    <div class="metric-card red"><div class="m-label">最大單筆虧損</div><div class="m-value neg">${fmt(maxLoss)}</div></div>
+  `;
+}
+
+// ═══ Charts ═══
+function destroyChart(key) { if(charts[key]) { charts[key].destroy(); charts[key]=null; } }
+
+function renderMonthlyChart() {
+  destroyChart('monthly');
+  const monthly = {};
+  trades.forEach(t => { const m=getMonth(t.sellDate); if(!monthly[m]) monthly[m]={pnl:0,div:0}; monthly[m].pnl+=t.pnl; });
+  dividends.filter(d=>d.kind==='cash').forEach(d => { const m=getMonth(d.date); if(!monthly[m]) monthly[m]={pnl:0,div:0}; monthly[m].div+=d.net; });
+  const labels = Object.keys(monthly).sort();
+  const pnls = labels.map(l=>monthly[l].pnl);
+  const divs = labels.map(l=>monthly[l].div);
+  const colors = pnls.map(v => v>=0 ? '#2dd4a0' : '#f4604a');
+
+  charts.monthly = new Chart(document.getElementById('monthlyChart').getContext('2d'), {
+    type:'bar',
+    data:{ labels, datasets:[
+      { label:'交易損益', data:pnls, backgroundColor:colors, borderRadius:3, order:2 },
+      { label:'股利收入', data:divs, backgroundColor:'#22d3ee', borderRadius:3, order:1 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ y:{ ticks:{callback:v=>(v>=0?'+':'')+(v/10000).toFixed(0)+'萬', color:'#535b72', font:{size:10}}, grid:{color:'rgba(255,255,255,0.05)'} },
+               x:{ ticks:{color:'#535b72', font:{size:10}, maxRotation:45, autoSkip:false}, grid:{display:false} } } }
+  });
+}
+
+function renderTypeChart() {
+  destroyChart('type');
+  const tc={}, tp={};
+  trades.forEach(t => { tc[t.type]=(tc[t.type]||0)+1; tp[t.type]=(tp[t.type]||0)+t.pnl; });
+  const labels = Object.keys(tc);
+  const palette = ['#4a9eff','#2dd4a0','#f5a623','#a78bfa','#22d3ee','#f4604a'];
+
+  charts.type = new Chart(document.getElementById('typeChart').getContext('2d'), {
+    type:'doughnut',
+    data:{ labels, datasets:[{data:labels.map(l=>tc[l]), backgroundColor:palette.slice(0,labels.length), borderWidth:0, hoverOffset:4}]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, cutout:'65%' }
+  });
+
+  document.getElementById('typeStats').innerHTML = labels.map((l,i) =>
+    `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px;">
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span style="width:8px;height:8px;border-radius:2px;background:${palette[i]};display:inline-block"></span>
+        <span class="badge badge-${l}">${l}</span>
+        <span style="color:var(--text3)">${tc[l]}筆</span>
+      </span>
+      <span class="${cc(tp[l])}" style="font-family:var(--mono)">${tp[l]>=0?'+':''}${fmt(tp[l])}</span>
+    </div>`
+  ).join('');
+}
+
+function renderDistChart() {
+  destroyChart('dist');
+  const bins = [[-Infinity,-100000],[-100000,-50000],[-50000,-20000],[-20000,-5000],[-5000,0],[0,5000],[5000,20000],[20000,50000],[50000,100000],[100000,Infinity]];
+  const labels = ['<-10W','-10~-5W','-5~-2W','-2W~-0.5W','-0.5W~0','0~0.5W','0.5W~2W','2~5W','5~10W','>10W'];
+  const counts = bins.map(([a,b]) => trades.filter(t=>t.pnl>=a&&t.pnl<b).length);
+  const colors = bins.map(([a]) => a>=0?'#2dd4a0':'#f4604a');
+
+  charts.dist = new Chart(document.getElementById('distChart').getContext('2d'), {
+    type:'bar', data:{ labels, datasets:[{data:counts, backgroundColor:colors, borderRadius:3}]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ y:{ticks:{color:'#535b72',font:{size:10}}, grid:{color:'rgba(255,255,255,0.05)'}}, x:{ticks:{color:'#535b72',font:{size:9},maxRotation:35}, grid:{display:false}} } }
+  });
+}
+
+function renderDivChart() {
+  destroyChart('div');
+  const monthly = {};
+  dividends.filter(d=>d.kind==='cash').forEach(d => { const m=getMonth(d.date); monthly[m]=(monthly[m]||0)+d.net; });
+  const labels = Object.keys(monthly).sort();
+  const data = labels.map(l=>monthly[l]);
+
+  charts.div = new Chart(document.getElementById('divChart').getContext('2d'), {
+    type:'bar', data:{ labels, datasets:[{data, backgroundColor:'#22d3ee', borderRadius:3}]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ y:{ticks:{callback:v=>fmt(v), color:'#535b72',font:{size:10}}, grid:{color:'rgba(255,255,255,0.05)'}}, x:{ticks:{color:'#535b72',font:{size:10}}, grid:{display:false}} } }
+  });
+}
+
+// ═══ Detail ═══
+function populateFilters() {
+  const stocks = [...new Map(trades.map(t=>[t.code,{code:t.code,name:t.name}])).values()];
+  const types = [...new Set(trades.map(t=>t.type))].filter(Boolean);
+  const months = [...new Set(trades.map(t=>getMonth(t.sellDate)))].sort();
+  document.getElementById('filterStock').innerHTML = '<option value="">全部股票</option>'+stocks.map(s=>`<option value="${s.code}">${s.code} ${s.name}</option>`).join('');
+  document.getElementById('filterType').innerHTML = '<option value="">全部類型</option>'+types.map(t=>`<option value="${t}">${t}</option>`).join('');
+  document.getElementById('filterMonth').innerHTML = '<option value="">全部月份</option>'+months.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+
+function renderDetail() {
+  let filtered = trades;
+  const fS = document.getElementById('filterStock').value;
+  const fT = document.getElementById('filterType').value;
+  const fM = document.getElementById('filterMonth').value;
+  const fP = document.getElementById('filterPnl').value;
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  if (fS) filtered = filtered.filter(t=>t.code===fS);
+  if (fT) filtered = filtered.filter(t=>t.type===fT);
+  if (fM) filtered = filtered.filter(t=>getMonth(t.sellDate)===fM);
+  if (fP==='win') filtered = filtered.filter(t=>t.pnl>0);
+  if (fP==='loss') filtered = filtered.filter(t=>t.pnl<0);
+  if (q) filtered = filtered.filter(t=>t.code.includes(q)||t.name.toLowerCase().includes(q));
+
+  document.getElementById('tradeCount').textContent = `共 ${filtered.length} 筆`;
+  document.getElementById('detailBody').innerHTML = filtered.map(t => `
+    <tr>
+      <td class="mono">${t.code}</td><td>${t.name}</td>
+      <td class="mono">${t.sellDate}</td>
+      <td><span class="badge badge-${t.type}">${t.type}</span></td>
+      <td style="text-align:right" class="mono">${t.sellPrice}</td>
+      <td style="text-align:right" class="mono">${t.buyPrice||'-'}</td>
+      <td style="text-align:right" class="mono">${fmt(t.qty)}</td>
+      <td style="text-align:right" class="mono">${fmt(t.fee)}</td>
+      <td style="text-align:right" class="mono">${fmt(t.tax)}</td>
+      <td style="text-align:right;font-weight:500" class="mono ${cc(t.pnl)}">${t.pnl>=0?'+':''}${fmt(t.pnl)}</td>
+      <td style="text-align:right" class="mono ${cc(t.returnRate)}">${fmtPct(t.returnRate)}</td>
+    </tr>`).join('');
+
+  const sumPnl = filtered.reduce((s,t)=>s+t.pnl,0);
+  const sumFee = filtered.reduce((s,t)=>s+t.fee,0);
+  const sumTax = filtered.reduce((s,t)=>s+t.tax,0);
+  document.getElementById('detailSummary').innerHTML = `
+    <span>篩選損益：<strong class="${cc(sumPnl)}">${sumPnl>=0?'+':''}${fmt(sumPnl)}</strong></span>
+    <span>手續費：<strong>$${fmt(sumFee)}</strong></span>
+    <span>交易稅：<strong>$${fmt(sumTax)}</strong></span>`;
+}
+
+// ═══ Stock Cards ═══
+function renderStockCards() {
+  const sm = {};
+  trades.forEach(t => {
+    if (!sm[t.code]) sm[t.code]={code:t.code,name:t.name,pnl:0,cost:0,count:0,wins:0};
+    sm[t.code].pnl+=t.pnl;
+    sm[t.code].cost+=(t.cost>0?t.cost:t.buyPrice*t.qty);
+    sm[t.code].count++;
+    if(t.pnl>0) sm[t.code].wins++;
+  });
+  // attach dividends
+  dividends.forEach(d => {
+    if (!sm[d.code]) sm[d.code]={code:d.code,name:d.name,pnl:0,cost:0,count:0,wins:0};
+    if (d.kind==='cash') sm[d.code].cashDiv=(sm[d.code].cashDiv||0)+d.net;
+    if (d.kind==='stock') sm[d.code].stockDiv=(sm[d.code].stockDiv||0)+d.gotShares;
+  });
+
+  const sort = document.getElementById('stockSort').value;
+  let arr = Object.values(sm);
+  if (sort==='pnl') arr.sort((a,b)=>b.pnl-a.pnl);
+  else if (sort==='pnl_asc') arr.sort((a,b)=>a.pnl-b.pnl);
+  else if (sort==='ret') arr.sort((a,b)=>(b.cost>0?b.pnl/b.cost:0)-(a.cost>0?a.pnl/a.cost:0));
+  else arr.sort((a,b)=>b.count-a.count);
+
+  document.getElementById('stockSummary').textContent = `${arr.length} 支股票`;
+  document.getElementById('stockGrid').innerHTML = arr.map(s => {
+    const ret = s.cost>0 ? s.pnl/s.cost*100 : 0;
+    const wr = s.count>0 ? s.wins/s.count*100 : 0;
+    return `<div class="stock-card">
+      <div class="sc-code">${s.code}</div>
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-pnl ${cc(s.pnl)}">${s.pnl>=0?'+':''}${fmt(s.pnl)}</div>
+      <div class="sc-ret ${cc(ret)}">${fmtPct(ret)}</div>
+      <div class="sc-meta">
+        <span><b>${s.count}筆</b>交易</span>
+        <span><b>${wr.toFixed(0)}%</b>勝率</span>
+        ${s.cashDiv?`<span><b class="pos">+${fmt(s.cashDiv)}</b>現金股利</span>`:''}
+        ${s.stockDiv?`<span><b style="color:var(--teal)">${s.stockDiv}股</b>股票股利</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══ Monthly Table ═══
+function renderMonthlyTable() {
+  const monthly = {};
+  trades.forEach(t => {
+    const m=getMonth(t.sellDate);
+    if(!monthly[m]) monthly[m]={pnl:0,count:0,wins:0,cost:0,cashDiv:0,stockDivShares:0};
+    monthly[m].pnl+=t.pnl; monthly[m].count++; monthly[m].cost+=(t.cost>0?t.cost:t.buyPrice*t.qty);
+    if(t.pnl>0) monthly[m].wins++;
+  });
+  dividends.forEach(d => {
+    const m=getMonth(d.date);
+    if(!monthly[m]) monthly[m]={pnl:0,count:0,wins:0,cost:0,cashDiv:0,stockDivShares:0};
+    if(d.kind==='cash') monthly[m].cashDiv+=d.net;
+    if(d.kind==='stock') monthly[m].stockDivShares+=d.gotShares;
+  });
+  const months = Object.keys(monthly).sort();
+  let cum = 0;
+  document.getElementById('monthlyBody').innerHTML = months.map(m => {
+    cum += monthly[m].pnl + monthly[m].cashDiv;
+    const ret = monthly[m].cost>0 ? monthly[m].pnl/monthly[m].cost*100 : 0;
+    const wr = monthly[m].count>0 ? monthly[m].wins/monthly[m].count*100 : 0;
+    const total = monthly[m].pnl + monthly[m].cashDiv;
+    return `<tr>
+      <td class="mono">${m}</td>
+      <td style="text-align:right">${monthly[m].count}</td>
+      <td style="text-align:right" class="mono ${cc(monthly[m].pnl)}">${monthly[m].pnl>=0?'+':''}${fmt(monthly[m].pnl)}</td>
+      <td style="text-align:right" class="mono ${cc(ret)}">${fmtPct(ret)}</td>
+      <td style="text-align:right">${wr.toFixed(0)}%</td>
+      <td style="text-align:right" class="mono ${monthly[m].cashDiv>0?'pos':''}">${monthly[m].cashDiv>0?'+'+fmt(monthly[m].cashDiv):'-'}</td>
+      <td style="text-align:right" class="mono" style="color:var(--teal)">${monthly[m].stockDivShares>0?monthly[m].stockDivShares.toLocaleString()+'股':'-'}</td>
+      <td style="text-align:right;font-weight:500" class="mono ${cc(total)}">${total>=0?'+':''}${fmt(total)}</td>
+      <td style="text-align:right;font-weight:600" class="mono ${cc(cum)}">${cum>=0?'+':''}${fmt(cum)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══ Dividends ═══
+function addCashDiv() {
+  const code = document.getElementById('divCode').value.trim();
+  const name = document.getElementById('divName').value.trim();
+  const date = document.getElementById('divDate').value;
+  const shares = parseFloat(document.getElementById('divShares').value)||0;
+  const perShare = parseFloat(document.getElementById('divCashPerShare').value)||0;
+  let net = parseFloat(document.getElementById('divCashNet').value)||0;
+  if (!code||!date||shares<=0) return showMsg('cashDivMsg','請填寫必要欄位',false);
+  if (!net && perShare>0) net = Math.round(shares * perShare * 0.9); // 10% 扣繳
+  dividends.push({ id:Date.now(), kind:'cash', code, name, date, shares, perShare, net });
+  save(); refreshAll();
+  showMsg('cashDivMsg', `✓ 已新增 ${name}(${code}) 現金股利 $${fmt(net)}`, true);
+  ['divCode','divName','divDate','divShares','divCashPerShare','divCashNet'].forEach(id=>document.getElementById(id).value='');
+}
+
+function addStockDiv() {
+  const code = document.getElementById('sdivCode').value.trim();
+  const name = document.getElementById('sdivName').value.trim();
+  const date = document.getElementById('sdivDate').value;
+  const shares = parseFloat(document.getElementById('sdivShares').value)||0;
+  const rate = parseFloat(document.getElementById('sdivRate').value)||0;
+  let gotShares = parseFloat(document.getElementById('sdivGot').value)||0;
+  const price = parseFloat(document.getElementById('sdivPrice').value)||0;
+  if (!code||!date||shares<=0) return showMsg('stockDivMsg','請填寫必要欄位',false);
+  if (!gotShares && rate>0) gotShares = Math.floor(shares * rate / 1000);
+  const estValue = gotShares * price;
+  dividends.push({ id:Date.now(), kind:'stock', code, name, date, shares, rate, gotShares, price, estValue });
+  save(); refreshAll();
+  showMsg('stockDivMsg', `✓ 已新增 ${name}(${code}) 股票股利 ${gotShares} 股`, true);
+  ['sdivCode','sdivName','sdivDate','sdivShares','sdivRate','sdivGot','sdivPrice'].forEach(id=>document.getElementById(id).value='');
+}
+
+function deleteDividend(id) {
+  dividends = dividends.filter(d=>d.id!==id);
+  save(); refreshAll();
+}
+
+function showMsg(id, msg, ok) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.className = 'result-msg '+(ok?'ok':'err'); el.style.display='block';
+  setTimeout(()=>{ el.style.display='none'; }, 3000);
+}
+
+function renderDividendList() {
+  const cashDiv = dividends.filter(d=>d.kind==='cash').reduce((s,d)=>s+d.net,0);
+  const stockDivShares = dividends.filter(d=>d.kind==='stock').reduce((s,d)=>s+d.gotShares,0);
+  document.getElementById('totalCashDiv').textContent = '$'+fmt(cashDiv);
+  document.getElementById('totalStockDiv').textContent = stockDivShares.toLocaleString()+'股';
+
+  const sorted = [...dividends].sort((a,b)=>a.date>b.date?-1:1);
+  document.getElementById('divList').innerHTML = sorted.length ? sorted.map(d => `
+    <div class="div-item">
+      <div class="di-left">
+        <span class="badge badge-${d.kind==='cash'?'現金股利':'股票股利'}">${d.kind==='cash'?'現金股利':'股票股利'}</span>
+        <span style="font-weight:500">${d.name}</span>
+        <span class="mono" style="color:var(--text3);font-size:11px">${d.code}</span>
+        <span style="color:var(--text3);font-size:11px">${d.date}</span>
+        <span style="color:var(--text2);font-size:11px">${fmt(d.shares)}股</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="di-right ${d.kind==='cash'?'pos':''}" style="${d.kind==='stock'?'color:var(--teal)':''}">
+          ${d.kind==='cash' ? '+$'+fmt(d.net) : '+'+d.gotShares+'股'}
+          ${d.kind==='stock'&&d.price ? `<span style="font-size:10px;color:var(--text3);font-family:inherit">(≈$${fmt(d.estValue)})</span>` : ''}
+        </div>
+        <button class="div-del" onclick="deleteDividend(${d.id})">×</button>
+      </div>
+    </div>`).join('') : '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px">尚無股利記錄，請新增</div>';
+}
+
+// ═══ Import ═══
+function importData() {
+  const raw = document.getElementById('importText').value;
+  const mode = document.getElementById('importMode').value;
+  const parsed = parseTSV(raw);
+  if (!parsed.length) return showImportMsg('無法解析，請確認格式（Tab 分隔）', false);
+  if (mode === 'replace') trades = parsed;
+  else trades = [...trades, ...parsed];
+  save(); refreshAll();
+  showImportMsg(`✓ ${mode==='replace'?'取代匯入':'新增匯入'} ${parsed.length} 筆，共 ${trades.length} 筆`, true);
+  document.getElementById('importText').value = '';
+}
+
+function showImportMsg(msg, ok) {
+  const el = document.getElementById('importMsg');
+  el.textContent = msg; el.className = 'result-msg '+(ok?'ok':'err'); el.style.display='block';
+  setTimeout(()=>el.style.display='none', 4000);
+}
+
+function loadSample() { document.getElementById('importText').value = SAMPLE; }
+
+function clearTrades() { trades=[]; save(); refreshAll(); }
+function clearDividends() { dividends=[]; save(); refreshAll(); }
+
+function renderDataInfo() {
+  const cashDiv = dividends.filter(d=>d.kind==='cash').reduce((s,d)=>s+d.net,0);
+  const stockDiv = dividends.filter(d=>d.kind==='stock').reduce((s,d)=>s+d.gotShares,0);
+  document.getElementById('dataInfo').innerHTML = `
+    交易記錄：<strong>${trades.length} 筆</strong><br>
+    股利記錄：<strong>${dividends.length} 筆</strong><br>
+    現金股利合計：<strong class="pos">$${fmt(cashDiv)}</strong><br>
+    股票股利合計：<strong style="color:var(--teal)">${stockDiv.toLocaleString()} 股</strong><br>
+    資料來源：瀏覽器本地儲存`;
+  document.getElementById('dataStatus').innerHTML = trades.length>0 ? `<span>${trades.length} 筆資料</span>` : '尚無資料';
+}
+
+// ═══ Export ═══
+function exportCSV() {
+  const header = '代號,名稱,成交日期,類型,賣價,買價,數量,手續費,交易稅,盈虧,報酬率%\n';
+  const rows = trades.map(t => `${t.code},${t.name},${t.sellDate},${t.type},${t.sellPrice},${t.buyPrice},${t.qty},${t.fee},${t.tax},${t.pnl},${t.returnRate.toFixed(2)}`).join('\n');
+  downloadFile('stock_trades.csv', '\ufeff'+header+rows);
+}
+function exportDivCSV() {
+  const header = '類型,代號,名稱,日期,持有股數,每股股利/配股率,實收金額/獲配股數\n';
+  const rows = dividends.map(d => d.kind==='cash'
+    ? `現金股利,${d.code},${d.name},${d.date},${d.shares},${d.perShare},${d.net}`
+    : `股票股利,${d.code},${d.name},${d.date},${d.shares},${d.rate},${d.gotShares}`).join('\n');
+  downloadFile('dividends.csv', '\ufeff'+header+rows);
+}
+function downloadFile(name, content) {
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(content);
+  a.download = name; a.click();
+}
+
+// ═══ Refresh All ═══
+function refreshAll() {
+  renderMetrics();
+  renderMonthlyChart();
+  renderTypeChart();
+  renderDistChart();
+  renderDivChart();
+  populateFilters();
+  renderDetail();
+  renderStockCards();
+  renderMonthlyTable();
+  renderDividendList();
+  renderDataInfo();
+}
+
+// ═══ Init ═══
+load();
+if (!trades.length) { trades = parseTSV(SAMPLE); }
+save();
+refreshAll();
+document.getElementById('editModal')?.addEventListener('click', e => {
+  if (e.target === document.getElementById('editModal')) closeModal();
+});
+
+
+// ══ Holdings (Unrealized PnL) ══
+let holdings = [];
+
+function renderHoldings() {
+  const tMkt  = holdings.reduce((s,h)=>s+h.mktVal,0);
+  const tCost = holdings.reduce((s,h)=>s+h.costAmt,0);
+  const tPnl  = holdings.reduce((s,h)=>s+h.pnl,0);
+  const tInt  = holdings.reduce((s,h)=>s+h.interest,0);
+  const tRet  = tCost>0 ? tPnl/tCost*100 : 0;
+  const hs = document.getElementById('holdingsSummary');
+  if (hs) hs.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">持倉總市值</div><div style="font-size:17px;font-weight:600;font-family:var(--mono)">${fmt(tMkt)}</div></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">持倉總成本</div><div style="font-size:17px;font-weight:600;font-family:var(--mono)">${fmt(tCost)}</div></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">未實現損益</div><div style="font-size:17px;font-weight:600;font-family:var(--mono)" class="${cc(tPnl)}">${tPnl>=0?'+':''}${fmt(tPnl)}</div></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">整體報酬率</div><div style="font-size:17px;font-weight:600" class="${cc(tRet)}">${fmtPct(tRet)}</div></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">持股數</div><div style="font-size:17px;font-weight:600">${holdings.length} 支</div></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">利息費用</div><div style="font-size:17px;font-weight:600;font-family:var(--mono)" class="${tInt>0?'neg':''}">${tInt>0?'-'+fmt(tInt):'-'}</div></div>`;
+
+  let arr = [...holdings];
+  const q = (document.getElementById('holdSearch')?.value||'').toLowerCase();
+  const sort = document.getElementById('holdSort')?.value || 'pnl_desc';
+  if (q) arr = arr.filter(h=>h.code.toLowerCase().includes(q)||h.name.includes(q));
+  if (sort==='pnl_desc') arr.sort((a,b)=>b.pnl-a.pnl);
+  else if (sort==='pnl_asc') arr.sort((a,b)=>a.pnl-b.pnl);
+  else if (sort==='ret_desc') arr.sort((a,b)=>b.ret-a.ret);
+  else arr.sort((a,b)=>b.mktVal-a.mktVal);
+
+  const hc = document.getElementById('holdCount');
+  if (hc) hc.textContent = `${arr.length} / ${holdings.length} 支`;
+  const hb = document.getElementById('holdingsBody');
+  if (hb) hb.innerHTML = arr.map(h=>`
+    <tr style="background:${h.pnl>0?'rgba(45,212,160,.04)':h.pnl<0?'rgba(244,96,74,.04)':''}">
+      <td class="mono" style="font-weight:500">${h.code}</td>
+      <td style="font-weight:500">${h.name}</td>
+      <td><span class="badge badge-${h.tradeType}">${h.tradeType}</span></td>
+      <td style="text-align:right" class="mono">${h.qty.toLocaleString()}</td>
+      <td style="text-align:right" class="mono">${h.price.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="text-align:right" class="mono">${fmt(h.mktVal)}</td>
+      <td style="text-align:right" class="mono">${h.costAmt?fmt(h.costAmt):'-'}</td>
+      <td style="text-align:right" class="mono">${h.avgPrice?h.avgPrice.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:4}):'-'}</td>
+      <td style="text-align:right" class="mono">${fmt(h.fee)}</td>
+      <td style="text-align:right" class="mono ${h.interest>0?'neg':''}">${h.interest>0?'-'+fmt(h.interest):'-'}</td>
+      <td style="text-align:right;font-weight:600" class="mono ${cc(h.pnl)}">${h.pnl>=0?'+':''}${fmt(h.pnl)}</td>
+      <td style="text-align:right" class="mono ${cc(h.ret)}">${fmtPct(h.ret)}</td>
+    </tr>`).join('');
+
+  const fp=arr.reduce((s,h)=>s+h.pnl,0),fm=arr.reduce((s,h)=>s+h.mktVal,0);
+  const sr=document.getElementById('holdingsSumRow');
+  if (sr) sr.innerHTML=`<span>篩選市值：<strong class="mono">${fmt(fm)}</strong></span><span>篩選損益：<strong class="${cc(fp)} mono">${fp>=0?'+':''}${fmt(fp)}</strong></span>`;
+}
+
+// Load/save holdings in localStorage
+const _baseSave = typeof save === 'function' ? save : null;
+const _baseLoad = typeof load === 'function' ? load : null;
+
+// Override save/load to include holdings
+const __origSave = save;
+function save() {
+  try {
+    localStorage.setItem('sp_trades', JSON.stringify(trades));
+    localStorage.setItem('sp_holdings', JSON.stringify(holdings));
+    localStorage.setItem('sp_divs', JSON.stringify(dividends));
+  } catch(e) {}
+}
+const __origLoad = load;
+function load() {
+  try {
+    const t = localStorage.getItem('sp_trades');
+    const h = localStorage.getItem('sp_holdings');
+    const d = localStorage.getItem('sp_divs');
+    if (t) trades = JSON.parse(t);
+    if (h) holdings = JSON.parse(h);
+    if (d) dividends = JSON.parse(d);
+  } catch(e) {}
+}
+
+// Patch refreshAll to also call renderHoldings and update metrics with holdings data
+const __origRefreshAll = refreshAll;
+function refreshAll() {
+  __origRefreshAll();
+  renderHoldings();
+  // patch metric cards to include holdings
+  const holdPnl = holdings.reduce((s,h)=>s+h.pnl,0);
+  const holdMkt = holdings.reduce((s,h)=>s+h.mktVal,0);
+  const mg = document.getElementById('metricsGrid');
+  if (mg && holdings.length > 0) {
+    // Find and update or prepend unrealized card
+    const existingUnreal = mg.querySelector('[data-type="unrealized"]');
+    if (!existingUnreal) {
+      const card = document.createElement('div');
+      card.className = 'metric-card blue';
+      card.setAttribute('data-type','unrealized');
+      card.innerHTML = `<div class="m-label">未實現損益</div><div class="m-value ${cc(holdPnl)}">${holdPnl>=0?'+':''}${fmt(holdPnl)}</div><div class="m-sub">持倉市值 ${fmt(holdMkt)}</div>`;
+      mg.insertBefore(card, mg.children[2] || null);
+    } else {
+      existingUnreal.innerHTML = `<div class="m-label">未實現損益</div><div class="m-value ${cc(holdPnl)}">${holdPnl>=0?'+':''}${fmt(holdPnl)}</div><div class="m-sub">持倉市值 ${fmt(holdMkt)}</div>`;
+    }
+  }
+  // update dataInfo
+  const di = document.getElementById('dataInfo');
+  if (di) di.innerHTML = `目前資料：<strong>${trades.length}</strong> 筆交易、<strong>${holdings.length}</strong> 支持股、<strong>${dividends.length}</strong> 筆股利`;
+}
+
+// Page titles override
+const __origSwitchPanel = switchPanel;
+const PAGE_TITLES_EXT = {'holdings':'未實現損益'};
+function switchPanel(name) {
+  __origSwitchPanel(name);
+  if (PAGE_TITLES_EXT[name]) {
+    document.getElementById('pageTitle').textContent = PAGE_TITLES_EXT[name];
+  }
+}
+
+// loadHoldingsSample for text tab
+const HOLDINGS_SAMPLE = `0056\t元大高股息\t現股\t4000\t34.81\t139240\t145300\t36.325\t198\t139\t0\t-6397\t-4.40%\t新台幣
+2330\t台積電\t現股\t6000\t1140\t6840000\t6526664\t1087.78\t9747\t20520\t0\t283069\t4.34%\t新台幣`;
+function loadHoldingsSample() {
+  const el = document.getElementById('holdingsText');
+  if (el) el.value = HOLDINGS_SAMPLE;
+}
+function importHoldings() {
+  const raw = document.getElementById('holdingsText')?.value || '';
+  const res = [];
+  for (const line of raw.trim().split('\n')) {
+    if (!line.trim()) continue;
+    const c = line.split('\t');
+    if (c.length < 12) continue;
+    let i = 0;
+    if (!c[0].trim() && c[1]) i = 1;
+    const code = (c[i]||'').trim(), qty = parseFloat((c[i+3]||'').replace(/,/g,''))||0;
+    if (!code||!qty) continue;
+    const pnl = parseFloat((c[i+11]||'').replace(/[,+\s]/g,''))||0;
+    const ret = parseFloat((c[i+12]||'').replace(/[+%\s]/g,''))||0;
+    res.push({
+      code, name:(c[i+1]||'').trim()||code,
+      tradeType:(c[i+2]||'').trim()||'現股',
+      qty, price:parseFloat((c[i+4]||'').replace(/,/g,''))||0,
+      mktVal:parseFloat((c[i+5]||'').replace(/,/g,''))||0,
+      costAmt:parseFloat((c[i+6]||'').replace(/,/g,''))||0,
+      avgPrice:parseFloat((c[i+7]||'').replace(/,/g,''))||0,
+      fee:parseFloat((c[i+8]||'').replace(/,/g,''))||0,
+      tradeTax:parseFloat((c[i+9]||'').replace(/,/g,''))||0,
+      interest:parseFloat((c[i+10]||'').replace(/,/g,''))||0,
+      pnl, ret
+    });
+  }
+  if (!res.length) { alert('無法解析，請確認格式'); return; }
+  holdings = res; save(); refreshAll();
+  const el = document.getElementById('holdingsMsg');
+  if (el) { el.textContent=`✓ 匯入 ${res.length} 支持股`; el.className='result-msg ok'; el.style.display='block'; setTimeout(()=>el.style.display='none',3000); }
+}
+function exportHoldingsCSV() {
+  if (!holdings.length) { alert('尚無持倉資料'); return; }
+  const h='代號,名稱,類別,庫存,現價,市值,成本,均價,手續費,利息,損益,報酬率%\n';
+  const rows=holdings.map(h=>`${h.code},${h.name},${h.tradeType},${h.qty},${h.price},${h.mktVal},${h.costAmt},${h.avgPrice},${h.fee},${h.interest},${h.pnl},${h.ret.toFixed(2)}`).join('\n');
+  downloadFile('holdings.csv','\ufeff'+h+rows);
+}
+
+// ══════════════════════════════════════════════════
+//  EXCEL IMPORT — 針對券商對帳單格式精確解析
+// ══════════════════════════════════════════════════
+
+// 已實現對帳單固定欄位索引 (0-based):
+// 0:代號  1:名稱  2:成交日期(賣)  3:委託書號  4:交易類別
+// 5:賣價  6:成交日期(買)  7:委託書號  8:交易類別  9:買價
+// 10:數量  11:沖銷原始成本  12:手續費  13:交易稅  14:盈虧
+// 15:沒賣出回補手續費(選填)
+
+// 未實現損益欄位關鍵字
+const HOLD_COL_MAP = {
+  code:     ['代號','股票代號','證券代號'],
+  name:     ['名稱','股票名稱','證券名稱'],
+  tradeType:['交易類別','類別','類型','交易種類'],
+  qty:      ['庫存數量','庫存','數量'],
+  price:    ['現價','收盤價','最新價'],
+  mktVal:   ['市值','現值'],
+  costAmt:  ['成本金額','成本'],
+  avgPrice: ['平均單價','均價','平均成本'],
+  fee:      ['手續費'],
+  tradeTax: ['交易稅'],
+  interest: ['利息','融資利息'],
+  pnl:      ['損益','盈虧','未實現損益'],
+  ret:      ['報酬率'],
+};
+
+let tradeWorkbook = null;
+let holdWorkbook  = null;
+
+function findColIdx(headers, keywords) {
+  for (const kw of keywords) {
+    const i = headers.findIndex(h => String(h||'').replace(/\s/g,'').includes(kw));
+    if (i >= 0) return i;
+  }
+  return -1;
+}
+
+// ── tab switchers ──
+function switchImportTab(tab) {
+  const e = document.getElementById('importTabExcel');
+  const t = document.getElementById('importTabText');
+  const bE = document.getElementById('tabExcelBtn');
+  const bT = document.getElementById('tabTextBtn');
+  if (tab==='excel') {
+    e.style.display=''; t.style.display='none';
+    bE.style.borderBottomColor='var(--blue)'; bE.style.color='var(--text)'; bE.style.fontWeight='500';
+    bT.style.borderBottomColor='transparent'; bT.style.color='var(--text2)'; bT.style.fontWeight='';
+  } else {
+    e.style.display='none'; t.style.display='';
+    bT.style.borderBottomColor='var(--blue)'; bT.style.color='var(--text)'; bT.style.fontWeight='500';
+    bE.style.borderBottomColor='transparent'; bE.style.color='var(--text2)'; bE.style.fontWeight='';
+  }
+}
+function switchHoldTab(tab) {
+  const e = document.getElementById('holdTabExcel');
+  const t = document.getElementById('holdTabText');
+  const bE = document.getElementById('tabHoldExcelBtn');
+  const bT = document.getElementById('tabHoldTextBtn');
+  if (tab==='excel') {
+    e.style.display=''; t.style.display='none';
+    bE.style.borderBottomColor='var(--blue)'; bE.style.color='var(--text)'; bE.style.fontWeight='500';
+    bT.style.borderBottomColor='transparent'; bT.style.color='var(--text2)'; bT.style.fontWeight='';
+  } else {
+    e.style.display='none'; t.style.display='';
+    bT.style.borderBottomColor='var(--blue)'; bT.style.color='var(--text)'; bT.style.fontWeight='500';
+    bE.style.borderBottomColor='transparent'; bE.style.color='var(--text2)'; bE.style.fontWeight='';
+  }
+}
+
+// ── date formatter ──
+function xlDate(v) {
+  if (!v) return '';
+  const d = new Date(v);
+  if (!isNaN(d.getTime())) {
+    return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+  }
+  return String(v).split('T')[0].replace(/-/g,'/');
+}
+
+// ── 已實現 file read ──
+function handleTradeFile(file) {
+  if (!file) return;
+  const zone = document.getElementById('tradeDropZone');
+  zone.innerHTML = '<div style="font-size:28px;margin-bottom:8px">⏳</div><div style="font-size:13px">讀取中...</div>';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      tradeWorkbook = XLSX.read(e.target.result, {type:'array', cellDates:true});
+      const names = tradeWorkbook.SheetNames;
+      const sel = document.getElementById('tradeSheetName');
+      sel.innerHTML = names.map((s,i) => `<option value="${i}">${s}</option>`).join('');
+      document.getElementById('tradeSheetSelect').style.display = '';
+      zone.innerHTML = `<div style="font-size:28px;margin-bottom:8px">✅</div><div style="font-size:13px;font-weight:500">${file.name}</div><div style="font-size:11px;color:var(--text3)">${names.length} 個工作表</div>`;
+      previewTradeSheet();
+    } catch(err) {
+      zone.innerHTML = `<div style="font-size:28px;margin-bottom:8px">❌</div><div style="font-size:13px;color:var(--red)">讀取失敗：${err.message}</div>`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function previewTradeSheet() {
+  if (!tradeWorkbook) return;
+  const idx = parseInt(document.getElementById('tradeSheetName').value);
+  const sheet = tradeWorkbook.Sheets[tradeWorkbook.SheetNames[idx]];
+  // raw:false → dates as formatted strings; but we use cellDates:true so dates are JS Date
+  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false});
+
+  // Find header row: row where col[0] === '代號'
+  let hRow = 0;
+  for (let i=0; i<Math.min(15, rows.length); i++) {
+    if (String(rows[i][0]||'').trim()==='代號') { hRow=i; break; }
+  }
+
+  // Count trade rows vs special rows
+  let tradeCnt=0, adjRows=[];
+  for (let i=hRow+1; i<rows.length; i++) {
+    const r = rows[i];
+    const code = String(r[0]||'').trim();
+    const pnlRaw = String(r[14]||'').replace(/[,\s]/g,'');
+    if (code && !code.startsWith('=')) {
+      const p = parseFloat(pnlRaw);
+      if (!isNaN(p)) tradeCnt++;
+    } else if (!code) {
+      const p = parseFloat(pnlRaw);
+      const note = String(r[13]||r[15]||'').trim();
+      if (!isNaN(p) && !pnlRaw.startsWith('=') && Math.abs(p)>0) {
+        adjRows.push({note, pnl:p});
+      }
+    }
+  }
+
+  document.getElementById('tradePreview').style.display = '';
+  document.getElementById('tradePreviewText').innerHTML = `
+    <div style="margin-bottom:8px;font-weight:500">偵測結果：</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+      ${['代號','名稱','成交日期','交易類別','賣/買價','數量','成本','手續費','交易稅','盈虧'].map(f =>
+        `<span style="padding:2px 9px;border-radius:4px;background:var(--green-dim);color:var(--green);font-size:11px">✓ ${f}</span>`
+      ).join('')}
+    </div>
+    <div style="color:var(--text2)">
+      交易記錄：<strong>${tradeCnt} 筆</strong>
+      ${adjRows.length ? `｜另偵測到 <strong>${adjRows.length} 筆</strong>特殊調整，將自動加入調整紀錄` : ''}
+    </div>
+    ${adjRows.map(a=>`<div style="margin-top:3px;font-size:11px;color:var(--text3)">▸ ${a.note} ${a.pnl>=0?'+':''}${Math.round(a.pnl).toLocaleString('zh-TW')}</div>`).join('')}`;
+
+  const btn = document.getElementById('tradeImportBtn');
+  btn.disabled = tradeCnt===0;
+  btn.textContent = tradeCnt>0 ? `匯入 ${tradeCnt} 筆交易${adjRows.length?` + ${adjRows.length} 筆調整`:''}` : '偵測不到有效資料';
+
+  tradeWorkbook._hRow = hRow;
+  tradeWorkbook._sIdx = idx;
+}
+
+function importFromExcel() {
+  if (!tradeWorkbook) return;
+  const sheet = tradeWorkbook.Sheets[tradeWorkbook.SheetNames[tradeWorkbook._sIdx]];
+  const rows  = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false});
+  const hRow  = tradeWorkbook._hRow;
+  const SKIP_T = ['匯撥','追繳','現償'];
+
+  const parsed=[], autoAdjs=[];
+
+  for (let i=hRow+1; i<rows.length; i++) {
+    const r = rows[i];
+    const code = String(r[0]||'').trim();
+    const pnlRaw = String(r[14]||'').replace(/[,\s]/g,'');
+
+    if (code && !code.startsWith('=')) {
+      // Normal trade row
+      const pnlN = parseFloat(pnlRaw);
+      if (isNaN(pnlN)) continue;
+      const typeStr = String(r[4]||'').trim();
+      if (SKIP_T.some(s=>typeStr.includes(s))) continue;
+      const sp  = parseFloat(String(r[5]||'').replace(/,/g,''))||0;
+      const bp  = parseFloat(String(r[9]||'').replace(/,/g,''))||0;
+      const qN  = parseInt(String(r[10]||'').replace(/,/g,''))||0;
+      const cN  = parseFloat(String(r[11]||'').replace(/,/g,''))||0;
+      const fN  = parseFloat(String(r[12]||'').replace(/,/g,''))||0;
+      const tN  = parseFloat(String(r[13]||'').replace(/,/g,''))||0;
+      // P欄(index 15): 沒賣出回補手續費
+      const extraFee = parseFloat(String(r[15]||'').replace(/,/g,''))||0;
+      const base = cN>0 ? cN : bp*qN;
+      parsed.push({
+        id: Date.now()+Math.random(),
+        code, name: String(r[1]||'').trim(),
+        sellDate: xlDate(r[2]),
+        type: typeStr,
+        sellPrice:sp, buyPrice:bp, qty:qN, cost:cN, fee:fN, tax:tN,
+        pnl: pnlN,
+        adjPnl: extraFee ? pnlN - Math.abs(extraFee) : null,
+        adjNote: extraFee ? `沒賣出回補手續費 ${Math.abs(extraFee).toLocaleString('zh-TW')}` : '',
+        returnRate: base>0 ? pnlN/base*100 : 0
+      });
+    } else if (!code) {
+      // Special adjustment row
+      const pnlN = parseFloat(pnlRaw);
+      if (isNaN(pnlN)||pnlRaw.startsWith('=')||Math.abs(pnlN)<1) continue;
+      const note = (String(r[13]||'').trim()||String(r[15]||'').trim());
+      if (!note) continue;
+      const dateStr = xlDate(r[12]);
+      let adjType = 'other';
+      if (note.includes('追繳')||note.includes('轉帳支取')) adjType='margin_call';
+      else if (note.includes('回補')) adjType='fee_extra';
+      autoAdjs.push({
+        id: Date.now()+Math.random(),
+        code:'', name:'',
+        date: dateStr,
+        type: adjType,
+        amount: pnlN,
+        note: note + (String(r[15]||'').trim() && String(r[15]||'').trim()!==note ? ' '+String(r[15]).trim() : '')
+      });
+    }
+  }
+
+  if (!parsed.length) { showImportMsg('importMsg','無法解析資料，請確認格式',false); return; }
+
+  const mode = document.getElementById('importMode').value;
+  if (mode==='replace') { trades=[]; adjustments=[]; }
+  trades = [...trades, ...parsed];
+  autoAdjs.forEach(a=>{
+    const dup = adjustments.find(x=>x.note===a.note&&x.amount===a.amount);
+    if (!dup) adjustments.push(a);
+  });
+
+  save(); refreshAll();
+  showImportMsg('importMsg',
+    `✓ 匯入 ${parsed.length} 筆交易${autoAdjs.length?`，自動加入 ${autoAdjs.length} 筆調整（追繳/回補）`:''}，共 ${trades.length} 筆`,
+    true);
+}
+
+// ── 未實現損益 file read ──
+function handleHoldFile(file) {
+  if (!file) return;
+  const zone = document.getElementById('holdDropZone');
+  zone.innerHTML = '<div style="font-size:24px;margin-bottom:6px">⏳</div><div style="font-size:13px">讀取中...</div>';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      holdWorkbook = XLSX.read(e.target.result, {type:'array'});
+      const names = holdWorkbook.SheetNames;
+      const sel = document.getElementById('holdSheetName');
+      sel.innerHTML = names.map((s,i)=>`<option value="${i}">${s}</option>`).join('');
+      document.getElementById('holdSheetSelect').style.display='';
+      zone.innerHTML = `<div style="font-size:24px;margin-bottom:6px">✅</div><div style="font-size:13px;font-weight:500">${file.name}</div><div style="font-size:11px;color:var(--text3)">${names.length} 個工作表</div>`;
+      previewHoldSheet();
+    } catch(err) {
+      zone.innerHTML = `<div style="font-size:24px;margin-bottom:6px">❌</div><div style="font-size:13px;color:var(--red)">讀取失敗：${err.message}</div>`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function previewHoldSheet() {
+  if (!holdWorkbook) return;
+  const idx = parseInt(document.getElementById('holdSheetName').value);
+  const sheet = holdWorkbook.Sheets[holdWorkbook.SheetNames[idx]];
+  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false});
+
+  // 格式：第1列大標題、第2列部分欄位名、第3列起資料
+  // 固定欄位(0-based index): 1:代號 2:名稱 3:類別 4:庫存 5:現價 6:市值 7:成本 8:均價 9:手續費 10:交易稅 11:利息 12:損益 13:報酬率
+  // 最後一列是合計行（A欄有文字），需跳過
+  const dataStart = 2; // 第3列(index 2)開始
+  let dataCnt = 0;
+  for (let i = dataStart; i < rows.length; i++) {
+    const r = rows[i];
+    const code = String(r[1]||'').trim();
+    // 跳過合計行（A欄有值 或 代號欄是空的）
+    if (!code || code === '' || String(r[0]||'').trim() !== '') continue;
+    dataCnt++;
+  }
+
+  document.getElementById('holdPreview').style.display = '';
+  document.getElementById('holdPreviewText').innerHTML = `
+    <div style="margin-bottom:8px;font-weight:500">偵測結果（你的未實現格式）：</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+      ${['代號(B)','名稱(C)','類別(D)','庫存(E)','現價(F)','市值(G)','成本(H)','均價(I)','手續費(J)','交易稅(K)','利息(L)','損益(M)','報酬率(N)'].map(f =>
+        `<span style="padding:2px 9px;border-radius:4px;background:var(--green-dim);color:var(--green);font-size:11px">✓ ${f}</span>`
+      ).join('')}
+    </div>
+    <div style="color:var(--text2)">共 <strong>${dataCnt}</strong> 支股票（已自動跳過表頭和合計行）</div>`;
+
+  const btn = document.getElementById('holdImportBtn');
+  btn.disabled = dataCnt === 0;
+  btn.textContent = dataCnt > 0 ? `匯入 ${dataCnt} 支持股` : '偵測不到資料';
+  holdWorkbook._hIdx = idx;
+}
+
+function importHoldingsFromExcel() {
+  if (!holdWorkbook) return;
+  const idx = holdWorkbook._hIdx !== undefined ? holdWorkbook._hIdx : 0;
+  const sheet = holdWorkbook.Sheets[holdWorkbook.SheetNames[idx]];
+  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false});
+
+  // 固定欄位索引（0-based）
+  // 1:代號 2:名稱 3:類別 4:庫存 5:現價 6:市值 7:成本 8:均價 9:手續費 10:交易稅 11:利息 12:損益 13:報酬率
+  const n = v => parseFloat(String(v||'').replace(/[,+%\s]/g,'').replace(/^-$/, '0')) || 0;
+  const s = v => String(v||'').trim();
+
+  const parsed = [];
+  for (let i = 2; i < rows.length; i++) {
+    const r = rows[i];
+    // 跳過合計行（A欄有值）或空行
+    if (String(r[0]||'').trim() !== '') continue;
+    const code = s(r[1]);
+    if (!code) continue;
+    const qty = n(r[4]);
+    if (!qty) continue;
+
+    // 損益：去除 + 號、逗號
+    const pnlStr = String(r[12]||'').replace(/[,+\s]/g,'');
+    const pnl = parseFloat(pnlStr) || 0;
+    // 報酬率：去除 % 和 +，處理 '-' 情況
+    const retStr = String(r[13]||'').replace(/[+%\s]/g,'');
+    const ret = retStr === '-' ? 0 : (parseFloat(retStr) || 0);
+
+    parsed.push({
+      code,
+      name:      s(r[2]) || code,
+      tradeType: s(r[3]) || '現股',
+      qty,
+      price:     n(r[5]),
+      mktVal:    n(r[6]),
+      costAmt:   String(r[7]||'').trim() === '-' ? 0 : n(r[7]),
+      avgPrice:  String(r[8]||'').trim() === '-' ? 0 : n(r[8]),
+      fee:       n(r[9]),
+      tradeTax:  n(r[10]),
+      interest:  n(r[11]),
+      pnl,
+      ret
+    });
+  }
+
+  if (!parsed.length) {
+    showImportMsg('holdingsMsg', '無法解析資料，請確認格式', false);
+    return;
+  }
+  holdings = parsed;
+  save(); refreshAll();
+  showImportMsg('holdingsMsg', `✓ 已匯入 ${parsed.length} 支持股`, true);
+}
+
+
+// ── Drag & drop ──
+function setupDrop(zoneId, handler) {
+  const z=document.getElementById(zoneId);
+  if (!z) return;
+  z.addEventListener('dragover', e=>{e.preventDefault();z.style.borderColor='var(--blue)';z.style.background='var(--blue-dim)';});
+  z.addEventListener('dragleave', ()=>{z.style.borderColor='';z.style.background='';});
+  z.addEventListener('drop', e=>{
+    e.preventDefault();z.style.borderColor='';z.style.background='';
+    const f=e.dataTransfer.files[0];
+    if(f) handler(f);
+  });
+}
+
+function showImportMsg(id, msg, ok) {
+  const el=document.getElementById(id);
+  if (!el) return;
+  el.textContent=msg; el.className='result-msg '+(ok?'ok':'err'); el.style.display='block';
+  setTimeout(()=>el.style.display='none', 5000);
+}
+
+// Exports
+function exportHoldingsCSV(){
+  const h='代號,名稱,類別,庫存,現價,市值,成本,均價,手續費,利息,損益,報酬率%\n';
+  const rows=holdings.map(h=>`${h.code},${h.name},${h.tradeType},${h.qty},${h.price},${h.mktVal},${h.costAmt},${h.avgPrice},${h.fee},${h.interest},${h.pnl},${h.ret.toFixed(2)}`).join('\n');
+  downloadFile('holdings.csv','\ufeff'+h+rows);
+}
+function exportAdjCSV(){
+  const h='類型,代號,名稱,日期,金額,備註\n';
+  const rows=adjustments.map(a=>`${a.type},${a.code},${a.name},${a.date},${a.amount},${a.note}`).join('\n');
+  downloadFile('adjustments.csv','\ufeff'+h+rows);
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  setupDrop('tradeDropZone', handleTradeFile);
+  setupDrop('holdDropZone',  handleHoldFile);
+});
+
+
+// ── Quick import from topbar buttons ──
+function quickImportTrades(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
+      // 找「已實現」工作表，找不到就用第一個
+      const sheetName = wb.SheetNames.find(s => s.includes('已實現')) || wb.SheetNames[0];
+      const sheet = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false});
+      const result = parseTradeRows(rows);
+      if (!result.trades.length) {
+        showTopbarMsg('已實現匯入失敗：偵測不到交易資料', false); return;
+      }
+      // append mode
+      trades = [...trades, ...result.trades];
+      result.adjs.forEach(a => {
+        if (!adjustments.find(x => x.note===a.note && x.amount===a.amount)) adjustments.push(a);
+      });
+      save(); refreshAll();
+      showTopbarMsg(`✓ 已匯入 ${result.trades.length} 筆交易${result.adjs.length ? `，${result.adjs.length} 筆調整` : ''}`, true);
+    } catch(err) {
+      showTopbarMsg('讀取失敗：' + err.message, false);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  // reset so same file can be re-uploaded
+  document.getElementById('quickTradeFile').value = '';
+}
+
+function quickImportHoldings(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      // 找「未實現」工作表，找不到就用第一個
+      const sheetName = wb.SheetNames.find(s => s.includes('未實現')) || wb.SheetNames[0];
+      const sheet = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
+      const result = parseHoldingRows(rows);
+      if (!result.length) {
+        showTopbarMsg('未實現匯入失敗：偵測不到持股資料', false); return;
+      }
+      holdings = result;
+      save(); refreshAll();
+      showTopbarMsg(`✓ 已匯入 ${result.length} 支持股`, true);
+    } catch(err) {
+      showTopbarMsg('讀取失敗：' + err.message, false);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  document.getElementById('quickHoldFile').value = '';
+}
+
+// ── Shared parsers (used by both quick buttons and import page) ──
+function parseTradeRows(rows) {
+  // 已實現固定欄位：
+  // 0:代號 1:名稱 2:成交日期 3:委託書號 4:交易類別 5:賣價
+  // 6:成交日期 7:委託書號 8:交易類別 9:買價 10:數量
+  // 11:沖銷原始成本 12:手續費 13:交易稅 14:盈虧 15:沒賣出回補手續費
+  const SKIP_T = ['匯撥','追繳','現償'];
+  const parsed = [], adjs = [];
+
+  // Find header row (row where col[0]==='代號')
+  let hRow = 0;
+  for (let i=0; i<Math.min(10, rows.length); i++) {
+    if (String(rows[i][0]||'').trim() === '代號') { hRow=i; break; }
+  }
+
+  for (let i=hRow+1; i<rows.length; i++) {
+    const r = rows[i];
+    const code = String(r[0]||'').trim();
+    const pnlRaw = String(r[14]||'').replace(/[,\s]/g,'');
+
+    if (code && !code.startsWith('=')) {
+      // 一般交易行
+      const pnlN = parseFloat(pnlRaw);
+      if (isNaN(pnlN)) continue;
+      const typeStr = String(r[4]||'').trim();
+      if (SKIP_T.some(s=>typeStr.includes(s))) continue;
+      const sp = parseFloat(String(r[5]||'').replace(/,/g,''))||0;
+      const bp = parseFloat(String(r[9]||'').replace(/,/g,''))||0;
+      const qN = parseInt(String(r[10]||'').replace(/,/g,''))||0;
+      const cN = parseFloat(String(r[11]||'').replace(/,/g,''))||0;
+      const fN = parseFloat(String(r[12]||'').replace(/,/g,''))||0;
+      const tN = parseFloat(String(r[13]||'').replace(/,/g,''))||0;
+      const extraFee = parseFloat(String(r[15]||'').replace(/,/g,''))||0;
+      const base = cN>0 ? cN : bp*qN;
+      // Date
+      let dateStr = '';
+      const dv = r[2];
+      if (dv) {
+        const d = new Date(dv);
+        if (!isNaN(d.getTime())) dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+        else dateStr = String(dv).split('T')[0].replace(/-/g,'/');
+      }
+      parsed.push({
+        id: Date.now()+Math.random(),
+        code, name: String(r[1]||'').trim(),
+        sellDate: dateStr, type: typeStr,
+        sellPrice:sp, buyPrice:bp, qty:qN, cost:cN, fee:fN, tax:tN,
+        pnl: pnlN,
+        adjPnl: extraFee ? pnlN - Math.abs(extraFee) : null,
+        adjNote: extraFee ? `沒賣出回補手續費 ${Math.abs(extraFee).toLocaleString('zh-TW')}` : '',
+        returnRate: base>0 ? pnlN/base*100 : 0
+      });
+    } else if (!code) {
+      // 特殊調整行（追繳、回補等）
+      const pnlN = parseFloat(pnlRaw);
+      if (isNaN(pnlN)||pnlRaw.startsWith('=')||Math.abs(pnlN)<1) continue;
+      const note = String(r[13]||'').trim() || String(r[15]||'').trim();
+      if (!note) continue;
+      let dateStr = '';
+      const dv = r[12];
+      if (dv) {
+        const d = new Date(dv);
+        if (!isNaN(d.getTime())) dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+      }
+      let adjType = 'other';
+      if (note.includes('追繳')||note.includes('轉帳支取')) adjType='margin_call';
+      else if (note.includes('回補')) adjType='fee_extra';
+      adjs.push({
+        id: Date.now()+Math.random(),
+        code:'', name:'', date:dateStr, type:adjType, amount:pnlN,
+        note: note + (String(r[15]||'').trim() && String(r[15]||'').trim()!==note ? ' '+String(r[15]).trim() : '')
+      });
+    }
+  }
+  return { trades: parsed, adjs };
+}
+
+function parseHoldingRows(rows) {
+  // 未實現固定欄位（0-based）:
+  // 1:代號 2:名稱 3:類別 4:庫存 5:現價 6:市值 7:成本 8:均價
+  // 9:手續費 10:交易稅 11:利息 12:損益 13:報酬率
+  // 資料從第3列(index 2)開始，跳過合計行(A欄有文字)
+  const n = v => parseFloat(String(v||'').replace(/[,+%\s]/g,'')) || 0;
+  const s = v => String(v||'').trim();
+  const parsed = [];
+  for (let i=2; i<rows.length; i++) {
+    const r = rows[i];
+    if (String(r[0]||'').includes('總市值') || String(r[0]||'').includes('Total')) continue;
+    if (String(r[0]||'').trim() !== '') continue; // skip header rows
+    const code = s(r[1]);
+    const qty  = n(r[4]);
+    if (!code || !qty) continue;
+    const retStr = s(r[13]);
+    parsed.push({
+      code, name: s(r[2])||code,
+      tradeType: s(r[3])||'現股',
+      qty, price: n(r[5]),
+      mktVal: n(r[6]),
+      costAmt: s(r[7])==='-' ? 0 : n(r[7]),
+      avgPrice: s(r[8])==='-' ? 0 : n(r[8]),
+      fee: n(r[9]), tradeTax: n(r[10]), interest: n(r[11]),
+      pnl: n(r[12]),
+      ret: retStr==='-' ? 0 : parseFloat(retStr.replace(/[+%]/g,''))||0,
+    });
+  }
+  return parsed;
+}
+
+// ── Topbar toast message ──
+function showTopbarMsg(msg, ok) {
+  let toast = document.getElementById('topbarToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'topbarToast';
+    toast.style.cssText = 'position:fixed;top:60px;right:20px;z-index:300;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;max-width:380px;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:opacity .3s';
+    document.body.appendChild(toast);
+  }
+  toast.style.background = ok ? 'var(--green)' : 'var(--red)';
+  toast.style.color = ok ? '#0a1f18' : '#fff';
+  toast.style.opacity = '1';
+  toast.textContent = msg;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.style.opacity='0', 4000);
+}
+
+// Override importFromExcel to use shared parser
+function importFromExcel() {
+  if (!tradeWorkbook) return;
+  const sheet = tradeWorkbook.Sheets[tradeWorkbook.SheetNames[tradeWorkbook._sIdx||0]];
+  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false});
+  const result = parseTradeRows(rows);
+  if (!result.trades.length) { showImportMsg('importMsg','無法解析資料，請確認格式',false); return; }
+  const mode = document.getElementById('importMode').value;
+  if (mode==='replace') { trades=[]; adjustments=[]; }
+  trades = [...trades, ...result.trades];
+  result.adjs.forEach(a=>{
+    if (!adjustments.find(x=>x.note===a.note&&x.amount===a.amount)) adjustments.push(a);
+  });
+  save(); refreshAll();
+  showImportMsg('importMsg',`✓ 匯入 ${result.trades.length} 筆${result.adjs.length?`，${result.adjs.length} 筆調整`:''}，共 ${trades.length} 筆`,true);
+}
+
+// Override importHoldingsFromExcel to use shared parser
+function importHoldingsFromExcel() {
+  if (!holdWorkbook) return;
+  const sheet = holdWorkbook.Sheets[holdWorkbook.SheetNames[holdWorkbook._sIdx||0]];
+  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
+  const result = parseHoldingRows(rows);
+  if (!result.length) { showImportMsg('holdingsMsg','無法解析，請確認格式',false); return; }
+  holdings = result;
+  save(); refreshAll();
+  showImportMsg('holdingsMsg',`✓ 已匯入 ${result.length} 支持股`,true);
+}
+
+</script>
+</body>
+</html>
