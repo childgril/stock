@@ -241,11 +241,15 @@ th.r,td.r{text-align:right}
       </div>
       <div class="tw" style="max-height:600px;overflow-y:auto">
         <table><thead><tr>
-          <th>代號</th><th>名稱</th><th>賣出日期</th><th>類別</th>
-          <th class="r">賣出價</th><th class="r">買入成本</th><th class="r">數量</th>
+          <th>代號</th><th>名稱</th>
+          <th class="r">賣出日期</th><th>賣出委託書號</th><th>賣出類別</th><th class="r">賣價</th>
+          <th class="r">買入日期</th><th>買入委託書號</th><th>買入類別</th><th class="r">買價</th>
+          <th class="r">數量</th><th class="r">沖銷原始成本</th>
           <th class="r">手續費</th><th class="r">交易稅</th>
+          <th class="r">盈虧</th>
+          <th>P欄備註</th>
           <th class="r" style="background:var(--ambdim)">融資利息</th>
-          <th class="r">原始損益</th><th class="r">調整金額</th>
+          <th class="r">調整金額</th>
           <th class="r">最終損益</th><th class="r">淨報酬率</th>
           <th>配對</th><th style="text-align:center">操作</th>
         </tr></thead>
@@ -594,37 +598,91 @@ function runMatch(){
 }
 
 // ══ PARSE ══
-// 已實現.xlsx 欄位：0:代號 1:名稱 2:賣出日期 3:委託書號 4:交易類別 5:賣價
-//                   6:買入日期 7:委託書號 8:類別 9:買價 10:數量 11:沖銷成本
-//                   12:手續費 13:交易稅 14:盈虧 15:P欄備註
+// 已實現.xlsx 欄位對應：
+// 0:代號  1:名稱  2:賣出成交日期  3:賣出委託書號  4:賣出交易類別  5:賣價
+// 6:買入成交日期  7:買入委託書號  8:買入交易類別  9:買價
+// 10:數量  11:沖銷原始成本  12:手續費  13:交易稅  14:盈虧
+// 15:P欄（沒賣出回補手續費 / 融資轉現股備註）
+// 特殊行：
+//   現償（融資轉現股）→ 類別='現償'，盈虧=0，P欄='融資轉現股'
+//   合計/調整行 → 代號為空
 function parseRealized(rows){
-  const res=[];
+  const res=[], specialAdjs=[];
   for(let i=1;i<rows.length;i++){
     const r=rows[i];
-    const code=String(r[0]||'').trim();
-    if(!code||!code.match(/^\d/)||String(r[14]||'').startsWith('=')) continue;
-    const pnlRaw=String(r[14]||'').replace(/,/g,'');
+    const code = String(r[0]||'').trim();
+    const pnlRaw = String(r[14]||'').replace(/,/g,'');
+
+    // ── 特殊調整行（代號空，N欄有金額）──
+    if(!code && r[14]!==null && r[14]!==undefined && !pnlRaw.startsWith('=')) {
+      const amt = parseFloat(pnlRaw);
+      const noteN = String(r[13]||'').trim();
+      const noteP = String(r[15]||'').trim();
+      if(!isNaN(amt) && Math.abs(amt)>0) {
+        const dateStr = r[12] ? xlDate(r[12]) : '';
+        specialAdjs.push({
+          id: Date.now()+Math.random(),
+          date: dateStr,
+          note: noteN || noteP,
+          amount: amt,
+          reason: noteN.includes('追繳')||noteP.includes('追繳') ? 'margin_call' : 'other'
+        });
+      }
+      continue;
+    }
+
+    // ── 一般交易行 ──
+    if(!code || !code.match(/^\d/)) continue;
     if(pnlRaw.startsWith('=')) continue;
-    const pnlN=parseFloat(pnlRaw);if(isNaN(pnlN)) continue;
-    const tradeType=String(r[4]||'').trim();
-    if(['匯撥','追繳','現償'].some(s=>tradeType.includes(s))) continue;
-    const extraFee=nn(r[15]);
+    const pnlN = parseFloat(pnlRaw);
+    if(isNaN(pnlN)) continue;
+
+    const tradeType = String(r[4]||'').trim();
+    const pCol = String(r[15]||'').trim(); // P欄
+
+    // 現償 = 融資轉現股（特殊記錄，不計入損益）
+    if(tradeType === '現償') {
+      specialAdjs.push({
+        id: Date.now()+Math.random(),
+        date: xlDate(r[2]),
+        code, name: String(r[1]||'').trim(),
+        note: `融資轉現股：${String(r[1]||'').trim()}(${code}) ${nn(r[10])}股 買入成本$${fmt(nn(r[11]))}`,
+        amount: 0,
+        reason: 'margin_transfer'
+      });
+      continue;
+    }
+
+    // 跳過其他非交易類別
+    if(['匯撥','追繳'].some(s=>tradeType.includes(s))) continue;
+
+    // P欄：若是數字 = 沒賣出回補手續費；若是文字 = 備註
+    const extraFee = (pCol && !isNaN(parseFloat(pCol))) ? Math.abs(parseFloat(pCol)) : 0;
+    const pNote = (!isNaN(parseFloat(pCol)) && extraFee) ? \`沒賣出回補手續費 \${fmt(extraFee)}\` : pCol;
+
     res.push({
       id: Date.now()+Math.random(),
-      code, name:String(r[1]||'').trim(),
-      sellDate: xlDate(r[2]), buyDate: xlDate(r[6]),
-      tradeType, sellPrice:nn(r[5]), buyPrice:nn(r[9]),
-      qty:nn(r[10]), cost:nn(r[11]),
-      fee:nn(r[12]), tax:nn(r[13]), pnl:pnlN,
-      extraFee, // P欄手動填的額外費用
-      interest:0, loan:0, matched:false,
-      adjPnl: extraFee ? pnlN-Math.abs(extraFee) : null,
-      adjBaseVal:undefined, adjExtraFee:extraFee||0,
-      adjNote: extraFee ? `沒賣出回補手續費 ${fmt(Math.abs(extraFee))}` : '',
+      code, name: String(r[1]||'').trim(),
+      sellDate: xlDate(r[2]), sellOrderNo: String(r[3]||''),
+      buyDate: xlDate(r[6]), buyOrderNo: String(r[7]||''),
+      sellType: tradeType,      // 賣出交易類別
+      buyType: String(r[8]||'').trim(), // 買入交易類別
+      tradeType,                // 主要類別（用於顯示/分組）
+      sellPrice: nn(r[5]), buyPrice: nn(r[9]),
+      qty: nn(r[10]), cost: nn(r[11]),
+      fee: nn(r[12]), tax: nn(r[13]),
+      pnl: pnlN,
+      pNote,           // P欄說明
+      extraFee,        // P欄手續費
+      interest: 0, loan: 0, matched: false,
+      // 若P欄有回補費用，預設設為調整後盈虧
+      adjPnl: extraFee ? pnlN - extraFee : null,
+      adjBaseVal: undefined, adjExtraFee: extraFee,
+      adjNote: pNote || '',
       interestManual: false
     });
   }
-  return res;
+  return { trades: res, adjs: specialAdjs };
 }
 
 // 投資明細 欄位：0:日期 1:代號 2:名稱 3:種類 4:買/賣 5:類別
@@ -709,10 +767,11 @@ function previewFile(type){
 
   if(type==='realized'){
     const parsed=parseRealized(rows);
-    const withFee=parsed.filter(r=>r.extraFee).length;
-    previewEl.innerHTML=`偵測到 <strong>${parsed.length} 筆</strong>已實現損益${withFee?`，${withFee} 筆有P欄回補費用`:''}`;
-    btn.disabled=!parsed.length;
-    btn.textContent=parsed.length?`匯入 ${parsed.length} 筆已實現損益`:'偵測不到資料';
+    const withFee=parsed.trades.filter(r=>r.extraFee).length;
+    const withAdjs=parsed.adjs.length;
+    previewEl.innerHTML=`偵測到 <strong>${parsed.trades.length} 筆</strong>已實現損益${withFee?`，${withFee} 筆有P欄回補費用`:''}${withAdjs?`，${withAdjs} 筆特殊調整（追繳/融資轉現股）`:''}`;
+    btn.disabled=!parsed.trades.length;
+    btn.textContent=parsed.trades.length?`匯入 ${parsed.trades.length} 筆已實現損益`:'偵測不到資料';
   } else if(type==='detail'){
     const parsed=parseDetail(rows);
     const sells=parsed.filter(d=>d.bs==='賣');
@@ -740,8 +799,15 @@ function doImport(type){
   const msgId='msg'+{realized:'R',detail:'D',holdings:'H'}[type];
 
   if(type==='realized'){
-    realized=parseRealized(rows);
-    if(!details.length){ showMsg(msgId,`✓ 已匯入 ${realized.length} 筆（請接著匯入投資明細以配對融資利息）`,true); }
+    const parsed = parseRealized(rows);
+    realized = parsed.trades;
+    // 自動將特殊調整行加入 adjustments（不重複）
+    parsed.adjs.forEach(a => {
+      if(!adjustments.find(x => x.note===a.note && x.amount===a.amount)) {
+        adjustments.push({id:a.id, code:a.code||'', name:a.name||'', date:a.date, reason:a.reason, amounts:[a.amount], amount:a.amount, note:a.note});
+      }
+    });
+    if(!details.length){ showMsg(msgId,`✓ 已匯入 ${realized.length} 筆${parsed.adjs.length?`，偵測到 ${parsed.adjs.length} 筆特殊調整已加入調整紀錄`:''}（請接著匯入投資明細以配對融資利息）`,true); }
     else { runMatch(); showMsg(msgId,`✓ 已匯入 ${realized.length} 筆並自動配對利息`,true); }
   } else if(type==='detail'){
     details=parseDetail(rows);
@@ -888,24 +954,30 @@ function renderRealized(){
     return `<tr class="${r.matched?'matched-row':''}" style="${isAdj?'background:rgba(103,65,217,.03)':''}">
       <td class="mono" style="font-weight:600">${r.code}</td>
       <td style="font-weight:500">${r.name}</td>
-      <td class="mono">${r.sellDate}</td>
-      <td><span class="badge b-${r.tradeType}">${r.tradeType}</span></td>
+      <td class="r mono">${r.sellDate}</td>
+      <td style="color:var(--text3);font-size:11px">${r.sellOrderNo||''}</td>
+      <td><span class="badge b-${r.sellType||r.tradeType}">${r.sellType||r.tradeType}</span></td>
       <td class="r mono">${fmtD(r.sellPrice)}</td>
-      <td class="r mono">${r.cost>0?fmt(r.cost):'-'}</td>
+      <td class="r mono" style="color:var(--text2)">${r.buyDate||''}</td>
+      <td style="color:var(--text3);font-size:11px">${r.buyOrderNo||''}</td>
+      <td style="color:var(--text2);font-size:11px">${r.buyType||''}</td>
+      <td class="r mono" style="color:var(--text2)">${r.buyPrice>0?fmtD(r.buyPrice):'-'}</td>
       <td class="r mono">${fmt(r.qty)}</td>
+      <td class="r mono">${r.cost>0?fmt(r.cost):'-'}</td>
       <td class="r mono">${fmt(r.fee)}</td>
       <td class="r mono">${fmt(r.tax)}</td>
-      <td class="r mono ${r.interest>0?'neg':'text3'}" style="font-weight:${r.interest?'600':'400'}">${r.interest>0?'-'+fmt(r.interest):'-'}</td>
-      <td class="r mono ${cc(r.pnl)}">${r.pnl>=0?'+':''}${fmt(r.pnl)}</td>
+      <td class="r mono ${cc(r.pnl)}" style="font-weight:600">${r.pnl>=0?'+':''}${fmt(r.pnl)}</td>
+      <td style="font-size:11px;color:${r.extraFee?'var(--red)':'var(--text3)'};max-width:100px;overflow:hidden;text-overflow:ellipsis" title="${r.pNote||''}">${r.pNote||'—'}</td>
+      <td class="r mono ${r.interest>0?'neg':''}" style="font-weight:${r.interest?'600':'400'};background:${r.interest?'var(--ambdim)':''}">${r.interest>0?'-'+fmt(r.interest):'-'}</td>
       <td class="r mono ${isAdj?cc(diff):''}">${isAdj?(diff>=0?'+':'')+fmt(diff):'—'}</td>
       <td class="r mono ${cc(fp)}" style="font-weight:700">${fp>=0?'+':''}${fmt(fp)}</td>
       <td class="r mono ${cc(netRet)}">${fmtP(netRet)}</td>
       <td>${matchBadge}</td>
-      <td style="text-align:center">
+      <td style="text-align:center;white-space:nowrap">
         <button class="btn btn-sm ${isAdj?'btn-accent':''}" onclick="openAdjModal('${r.id}')" style="margin-right:3px">${isAdj?'已調整':'調整'}</button>
         <button class="btn btn-sm" onclick="openInterestModal('${r.id}')" style="color:var(--amber);border-color:var(--amber)" title="修改融資利息">利息</button>
       </td>
-    </tr>`;
+    </tr>\`;
   }).join('');
 
   const sp=arr.reduce((s,r)=>s+finalPnl(r),0);
