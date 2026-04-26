@@ -9,203 +9,149 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #f0f2f8;
-  --white: #ffffff;
-  --border: #e2e5ef;
-  --border2: #c8cde0;
-  --text: #1e2240;
-  --text2: #5b6282;
-  --text3: #9ca3bf;
-  --accent: #3b5bdb;
-  --accent-dim: rgba(59,91,219,.08);
-  --accent-light: #eef1fd;
-  --green: #0ca678;
-  --green-dim: rgba(12,166,120,.08);
-  --green-light: #e6f8f3;
-  --red: #e03131;
-  --red-dim: rgba(224,49,49,.08);
-  --red-light: #fff0f0;
-  --amber: #e67700;
-  --amber-dim: rgba(230,119,0,.08);
-  --amber-light: #fff8e6;
-  --teal: #0891b2;
-  --teal-dim: rgba(8,145,178,.08);
-  --teal-light: #e0f7fc;
-  --purple: #6741d9;
-  --purple-dim: rgba(103,65,217,.08);
-  --shadow: 0 1px 3px rgba(30,34,64,.06), 0 1px 2px rgba(30,34,64,.04);
-  --shadow2: 0 4px 16px rgba(30,34,64,.1);
-  --r: 12px; --r-sm: 7px;
-  --mono: 'JetBrains Mono', monospace;
+:root{
+  --bg:#f0f2f8;--white:#fff;--border:#e2e5ef;--border2:#c8cde0;
+  --text:#1e2240;--text2:#5b6282;--text3:#9ca3bf;
+  --accent:#3b5bdb;--adim:rgba(59,91,219,.08);--alight:#eef1fd;
+  --green:#0ca678;--gdim:rgba(12,166,120,.08);--glight:#e6f8f3;
+  --red:#e03131;--rdim:rgba(224,49,49,.08);--rlight:#fff0f0;
+  --amber:#e67700;--ambdim:rgba(230,119,0,.08);--amblight:#fff8e6;
+  --teal:#0891b2;--tdim:rgba(8,145,178,.08);
+  --purple:#6741d9;--pdim:rgba(103,65,217,.08);
+  --shadow:0 1px 3px rgba(30,34,64,.06),0 1px 2px rgba(30,34,64,.04);
+  --shadow2:0 4px 20px rgba(30,34,64,.1);
+  --r:12px;--rs:7px;--mono:'JetBrains Mono',monospace
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
-
-/* Layout */
-.app { display: flex; min-height: 100vh; }
-.sidebar { width: 216px; flex-shrink: 0; background: var(--white); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; display: flex; flex-direction: column; overflow-y: auto; }
-.main { margin-left: 216px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6}
+.app{display:flex;min-height:100vh}
 /* Sidebar */
-.logo { padding: 22px 20px 16px; }
-.logo-title { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -.3px; }
-.logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.nav { padding: 6px 10px; flex: 1; }
-.nav-sec { font-size: 10px; color: var(--text3); letter-spacing: .8px; text-transform: uppercase; padding: 12px 8px 4px; font-weight: 600; }
-.nav-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: var(--r-sm); color: var(--text2); cursor: pointer; font-size: 13px; margin-bottom: 1px; border: none; background: none; width: 100%; text-align: left; transition: all .15s; font-family: inherit; font-weight: 400; }
-.nav-item:hover { color: var(--text); background: var(--bg); }
-.nav-item.active { color: var(--accent); background: var(--accent-dim); font-weight: 600; }
-.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; opacity: .6; }
-.nav-item.active svg { opacity: 1; }
-.sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text3); }
-.sidebar-footer b { color: var(--accent); }
-
-/* Topbar */
-.topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 26px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; min-height: 56px; gap: 12px; flex-wrap: wrap; }
-.topbar-left { display: flex; align-items: center; gap: 14px; }
-.page-title { font-size: 15px; font-weight: 700; color: var(--text); }
-.topbar-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-
+.sidebar{width:218px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;z-index:100;display:flex;flex-direction:column;overflow-y:auto}
+.logo{padding:22px 20px 14px}
+.logo-title{font-size:16px;font-weight:700;color:var(--text)}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.nav{padding:6px 10px;flex:1}
+.nsec{font-size:10px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;padding:12px 8px 4px;font-weight:600}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--rs);color:var(--text2);cursor:pointer;font-size:13px;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;transition:all .15s;font-family:inherit}
+.ni:hover{color:var(--text);background:var(--bg)}
+.ni.active{color:var(--accent);background:var(--adim);font-weight:600}
+.ni svg{width:15px;height:15px;flex-shrink:0;opacity:.6}
+.ni.active svg{opacity:1}
+.sf{padding:12px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
+.sf b{color:var(--accent)}
+/* Main */
+.main{margin-left:218px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;min-height:56px;gap:10px;flex-wrap:wrap}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.page-title{font-size:15px;font-weight:700}
+.topbar-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 /* Buttons */
-.btn { padding: 7px 14px; border-radius: var(--r-sm); font-size: 12px; cursor: pointer; border: 1px solid var(--border2); background: var(--white); color: var(--text); font-family: inherit; font-weight: 500; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; transition: all .15s; box-shadow: var(--shadow); }
-.btn:hover { background: var(--bg); }
-.btn-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn-accent:hover { opacity: .88; }
-.btn-green { background: var(--green); color: #fff; border-color: var(--green); font-weight: 600; }
-.btn-green:hover { opacity: .88; }
-.btn-teal { background: var(--teal); color: #fff; border-color: var(--teal); font-weight: 600; }
-.btn-teal:hover { opacity: .88; }
-.btn-danger { background: var(--red-dim); color: var(--red); border-color: rgba(224,49,49,.2); box-shadow: none; }
-.btn-danger:hover { background: var(--red); color: #fff; }
-.btn-sm { padding: 4px 10px; font-size: 11px; box-shadow: none; }
-label.btn { cursor: pointer; }
-
+.btn{padding:7px 13px;border-radius:var(--rs);font-size:12px;cursor:pointer;border:1px solid var(--border2);background:var(--white);color:var(--text);font-family:inherit;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;transition:all .15s;box-shadow:var(--shadow)}
+.btn:hover{background:var(--bg)}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-accent:hover{opacity:.88}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green);font-weight:600}
+.btn-green:hover{opacity:.88}
+.btn-teal{background:var(--teal);color:#fff;border-color:var(--teal);font-weight:600}
+.btn-teal:hover{opacity:.88}
+.btn-amber{background:var(--amber);color:#fff;border-color:var(--amber);font-weight:600}
+.btn-amber:hover{opacity:.88}
+.btn-danger{background:var(--rdim);color:var(--red);border-color:rgba(224,49,49,.2);box-shadow:none}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-sm{padding:4px 9px;font-size:11px;box-shadow:none}
+label.btn{cursor:pointer}
 /* Content */
-.content { padding: 22px 26px; flex: 1; }
-
+.content{padding:22px 26px;flex:1}
 /* Panels */
-.panel { display: none; }
-.panel.active { display: block; animation: fadeIn .18s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-
+.panel{display:none}
+.panel.active{display:block;animation:fadeIn .18s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 /* Cards */
-.card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
-.card-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.card-title { font-size: 13px; font-weight: 700; color: var(--text); }
-.card-body { padding: 16px 18px; }
-
-/* Metric cards */
-.metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px; margin-bottom: 22px; }
-.mc { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 15px 17px; box-shadow: var(--shadow); border-left: 3px solid var(--border2); }
-.mc.c-green { border-left-color: var(--green); } .mc.c-red { border-left-color: var(--red); }
-.mc.c-accent { border-left-color: var(--accent); } .mc.c-teal { border-left-color: var(--teal); }
-.mc.c-amber { border-left-color: var(--amber); } .mc.c-purple { border-left-color: var(--purple); }
-.mc-label { font-size: 11px; color: var(--text3); font-weight: 600; letter-spacing: .2px; margin-bottom: 5px; }
-.mc-value { font-size: 20px; font-weight: 700; font-family: var(--mono); letter-spacing: -.5px; }
-.mc-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
-.pos { color: var(--green) !important; } .neg { color: var(--red) !important; }
-
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+.card-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.card-title{font-size:13px;font-weight:700}
+.card-body{padding:16px 18px}
+/* Metrics */
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(163px,1fr));gap:12px;margin-bottom:22px}
+.mc{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:15px 17px;box-shadow:var(--shadow);border-left:3px solid var(--border2)}
+.mc.cg{border-left-color:var(--green)}.mc.cr{border-left-color:var(--red)}.mc.ca{border-left-color:var(--accent)}.mc.ct{border-left-color:var(--teal)}.mc.cam{border-left-color:var(--amber)}.mc.cp{border-left-color:var(--purple)}
+.ml{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.2px;margin-bottom:5px}
+.mv{font-size:20px;font-weight:700;font-family:var(--mono);letter-spacing:-.5px}
+.ms{font-size:11px;color:var(--text3);margin-top:4px}
+.pos{color:var(--green)!important}.neg{color:var(--red)!important}
 /* Charts */
-.charts-row { display: grid; gap: 14px; margin-bottom: 16px; }
-.c2 { grid-template-columns: 2fr 1fr; } .c22 { grid-template-columns: 1fr 1fr; }
-
+.charts-row{display:grid;gap:14px;margin-bottom:16px}
+.c2{grid-template-columns:2fr 1fr}.c22{grid-template-columns:1fr 1fr}
 /* Tables */
-.tw { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
-thead th { padding: 9px 12px; text-align: left; color: var(--text3); font-weight: 600; font-size: 11px; border-bottom: 1px solid var(--border); background: var(--white); position: sticky; top: 0; z-index: 2; letter-spacing: .2px; }
-tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
-tbody tr:hover { background: var(--bg); }
-tbody td { padding: 8px 12px; color: var(--text); vertical-align: middle; }
-tbody tr:last-child { border-bottom: none; }
-th.r, td.r { text-align: right; }
-
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
+thead th{padding:9px 12px;text-align:left;color:var(--text3);font-weight:600;font-size:11px;border-bottom:1px solid var(--border);background:var(--white);position:sticky;top:0;z-index:2}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:var(--bg)}
+tbody td{padding:8px 12px;vertical-align:middle}
+tbody tr:last-child{border-bottom:none}
+th.r,td.r{text-align:right}
+.matched-row{background:rgba(12,166,120,.03)!important}
+.unmatched-row{background:rgba(224,49,49,.03)!important}
 /* Toolbar */
-.toolbar { display: flex; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center; }
-.toolbar select, .toolbar input[type=text] { background: var(--bg); border: 1px solid var(--border2); color: var(--text); border-radius: var(--r-sm); padding: 5px 9px; font-size: 12px; font-family: inherit; outline: none; }
-.toolbar select:focus, .toolbar input:focus { border-color: var(--accent); }
-.ml-auto { margin-left: auto; }
-
+.toolbar{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.toolbar select,.toolbar input[type=text]{background:var(--bg);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);padding:5px 9px;font-size:12px;font-family:inherit;outline:none}
+.toolbar select:focus,.toolbar input:focus{border-color:var(--accent)}
+.ml-auto{margin-left:auto}
 /* Badges */
-.badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; letter-spacing: .2px; white-space: nowrap; }
-.b-買 { background: var(--accent-light); color: var(--accent); }
-.b-賣 { background: var(--red-dim); color: var(--red); }
-.b-現股 { background: var(--green-light); color: var(--green); }
-.b-融資 { background: var(--amber-light); color: var(--amber); }
-.b-融券 { background: var(--purple-dim); color: var(--purple); }
-.b-現股當沖 { background: var(--teal-light); color: var(--teal); }
-.b-調整 { background: var(--purple-dim); color: var(--purple); }
-.mono { font-family: var(--mono); }
-
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap}
+.b-現股{background:var(--glight);color:var(--green)}.b-融資{background:var(--amblight);color:var(--amber)}
+.b-融券{background:var(--pdim);color:var(--purple)}.b-現沖,.b-現股當沖{background:var(--tdim);color:var(--teal)}
+.b-已配對{background:var(--glight);color:var(--green)}.b-未配對{background:var(--rdim);color:var(--red)}
+.b-手動{background:var(--pdim);color:var(--purple)}
+.mono{font-family:var(--mono)}
 /* Forms */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-.form-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; box-shadow: var(--shadow); }
-.form-card h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
-.fg { margin-bottom: 12px; }
-.fg label { display: block; font-size: 11px; color: var(--text3); margin-bottom: 4px; font-weight: 600; letter-spacing: .2px; }
-.fg input, .fg select, .fg textarea { width: 100%; background: var(--bg); border: 1px solid var(--border2); color: var(--text); border-radius: var(--r-sm); padding: 7px 10px; font-size: 13px; font-family: inherit; outline: none; transition: border-color .15s; }
-.fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--accent); background: var(--white); }
-.fg textarea { height: 130px; resize: vertical; font-family: var(--mono); font-size: 11px; }
-.fr { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.fr3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-.rmsg { margin-top: 8px; font-size: 12px; padding: 8px 12px; border-radius: var(--r-sm); font-weight: 500; }
-.rmsg.ok { background: var(--green-light); color: var(--green); border: 1px solid rgba(12,166,120,.2); }
-.rmsg.err { background: var(--red-light); color: var(--red); border: 1px solid rgba(224,49,49,.2); }
-
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:600;letter-spacing:.2px}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);padding:7px 10px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);background:var(--white)}
+.fg textarea{height:130px;resize:vertical;font-family:var(--mono);font-size:11px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rmsg{margin-top:8px;font-size:12px;padding:8px 12px;border-radius:var(--rs);font-weight:500}
+.rmsg.ok{background:var(--glight);color:var(--green);border:1px solid rgba(12,166,120,.2)}
+.rmsg.err{background:var(--rlight);color:var(--red);border:1px solid rgba(224,49,49,.2)}
 /* Tabs */
-.tab-bar { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 14px; }
-.tab-btn { padding: 8px 16px; font-size: 13px; cursor: pointer; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; color: var(--text2); background: none; font-family: inherit; font-weight: 500; transition: all .15s; }
-.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-.tab-content { display: none; } .tab-content.active { display: block; }
-
+.tab-bar{display:flex;border-bottom:2px solid var(--border);margin-bottom:14px}
+.tab-btn{padding:8px 16px;font-size:13px;cursor:pointer;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--text2);background:none;font-family:inherit;font-weight:500;transition:all .15s}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none}.tab-content.active{display:block}
 /* Drop zone */
-.drop-zone { border: 2px dashed var(--border2); border-radius: var(--r); padding: 28px 20px; text-align: center; cursor: pointer; transition: all .2s; margin-bottom: 12px; }
-.drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--accent-dim); }
-
+.drop-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:24px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:var(--adim)}
 /* Modal */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(30,34,64,.4); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
-.modal-overlay.open { display: flex; }
-.modal { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 26px; width: 560px; max-width: 96vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(30,34,64,.18); }
-.modal h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-.modal-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 22px; line-height: 1; padding: 0; }
-.modal-close:hover { color: var(--text); }
-
-/* Holdings summary */
-.hold-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; margin-bottom: 18px; }
-.hs { background: var(--white); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 12px 14px; box-shadow: var(--shadow); }
-.hs .hl { font-size: 11px; color: var(--text3); margin-bottom: 4px; font-weight: 500; }
-.hs .hv { font-size: 17px; font-weight: 700; font-family: var(--mono); }
-
-/* Stock grid */
-.stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-.stock-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); transition: all .15s; }
-.stock-card:hover { box-shadow: var(--shadow2); transform: translateY(-1px); }
-
-/* Month group */
-.month-group-head { padding: 9px 14px; background: var(--bg); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; color: var(--text2); display: flex; justify-content: space-between; align-items: center; }
-
-/* Adj item */
-.adj-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; border-bottom: 1px solid var(--border); font-size: 12px; }
-.adj-row:last-child { border-bottom: none; }
-.adj-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 0 4px; transition: color .15s; line-height: 1; }
-.adj-del:hover { color: var(--red); }
-
-/* Info box */
-.info-box { background: var(--accent-dim); border: 1px solid rgba(59,91,219,.15); border-radius: var(--r-sm); padding: 10px 14px; font-size:12px; color: var(--accent); margin-bottom: 14px; line-height: 1.7; }
-
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(30,34,64,.4);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:26px;width:640px;max-width:97vw;max-height:92vh;overflow-y:auto;box-shadow:0 24px 64px rgba(30,34,64,.18)}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:22px;line-height:1;padding:0}
+.modal-close:hover{color:var(--text)}
+/* Hold summary */
+.hs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:18px}
+.hs{background:var(--white);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;box-shadow:var(--shadow)}
+.hs .hl{font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:500}
+.hs .hv{font-size:17px;font-weight:700;font-family:var(--mono)}
 /* Legend */
-.legend { display: flex; flex-wrap: wrap; gap: 12px; }
-.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
-.legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-
-/* Responsive */
-@media(max-width: 900px) { .c2, .c22, .form-grid { grid-template-columns: 1fr; } }
-@media(max-width: 700px) { .sidebar { width: 50px; } .logo, .nav-item span, .nav-sec, .sidebar-footer { display: none; } .main { margin-left: 50px; } .nav-item { justify-content: center; padding: 10px; } }
+.legend{display:flex;flex-wrap:wrap;gap:12px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.legend-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+/* Info box */
+.info-box{background:var(--adim);border:1px solid rgba(59,91,219,.15);border-radius:var(--rs);padding:10px 14px;font-size:12px;color:var(--accent);margin-bottom:14px;line-height:1.7}
+/* Adj list */
+.month-head{padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text2);display:flex;justify-content:space-between}
+.adj-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0 4px;transition:color .15s;line-height:1}
+.adj-del:hover{color:var(--red)}
+/* Form card */
+.form-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.form-card h3{font-size:14px;font-weight:700;margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@media(max-width:900px){.c2,.c22,.form-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.sidebar{width:50px}.logo,.ni span,.nsec,.sf{display:none}.main{margin-left:50px}.ni{justify-content:center;padding:10px}}
 </style>
 </head>
 <body>
@@ -213,40 +159,39 @@ th.r, td.r { text-align: right; }
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
-  <div class="logo">
-    <div class="logo-title">股票損益</div>
-    <div class="logo-sub">Grilchild · PnL Tracker</div>
-  </div>
+  <div class="logo"><div class="logo-title">股票損益</div><div class="logo-sub">Grilchild · PnL Tracker</div></div>
   <nav class="nav">
-    <div class="nav-sec">分析</div>
-    <button class="nav-item active" onclick="nav('overview')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2zm7 0h5v5H9zM2 9h5v5H2zm7 0h5v5H9z"/></svg><span>總覽</span></button>
-    <button class="nav-item" onclick="nav('realized')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 12l4-5 3 3 4-6 3 4v4H1z"/></svg><span>已實現損益</span></button>
-    <button class="nav-item" onclick="nav('holdings')"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="10" width="3" height="5"/><rect x="6" y="6" width="3" height="9"/><rect x="11" y="2" width="3" height="13"/></svg><span>未實現損益</span></button>
-    <button class="nav-item" onclick="nav('detail')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 3h14v1.5H1zm0 4h14v1.5H1zm0 4h14v1.5H1z"/></svg><span>投資明細</span></button>
-    <button class="nav-item" onclick="nav('monthly')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 1h12a1 1 0 011 1v12a1 1 0 01-1 1H2a1 1 0 01-1-1V2a1 1 0 011-1zm1 4v8h10V5H3zm1-3v2h2V2H4zm6 0v2h2V2h-2z"/></svg><span>月度分析</span></button>
-    <div class="nav-sec">記錄</div>
-    <button class="nav-item" onclick="nav('adjustments')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 110 14A7 7 0 018 1zm.75 4h-1.5v4.25l3.5 2.1.75-1.25-2.75-1.65V5z"/></svg><span>調整紀錄</span></button>
-    <div class="nav-sec">資料</div>
-    <button class="nav-item" onclick="nav('import')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1v8.5l-3-3L3.5 8 8 12.5l4.5-4.5L11 6.5l-3 3V1H8zM1 14h14v1.5H1V14z"/></svg><span>匯入數據</span></button>
+    <div class="nsec">分析</div>
+    <button class="ni active" onclick="nav('overview')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2zm7 0h5v5H9zM2 9h5v5H2zm7 0h5v5H9z"/></svg><span>總覽</span></button>
+    <button class="ni" onclick="nav('realized')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 12l4-5 3 3 4-6 3 4v4H1z"/></svg><span>已實現損益</span></button>
+    <button class="ni" onclick="nav('holdings')"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="10" width="3" height="5"/><rect x="6" y="6" width="3" height="9"/><rect x="11" y="2" width="3" height="13"/></svg><span>未實現損益</span></button>
+    <button class="ni" onclick="nav('detail')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 3h14v1.5H1zm0 4h14v1.5H1zm0 4h14v1.5H1z"/></svg><span>投資明細</span></button>
+    <button class="ni" onclick="nav('monthly')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 1h12a1 1 0 011 1v12a1 1 0 01-1 1H2a1 1 0 01-1-1V2a1 1 0 011-1zm1 4v8h10V5H3zm1-3v2h2V2H4zm6 0v2h2V2h-2z"/></svg><span>月度分析</span></button>
+    <div class="nsec">記錄</div>
+    <button class="ni" onclick="nav('adjustments')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 110 14A7 7 0 018 1zm.75 4h-1.5v4.25l3.5 2.1.75-1.25-2.75-1.65V5z"/></svg><span>調整紀錄</span></button>
+    <div class="nsec">資料</div>
+    <button class="ni" onclick="nav('import')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1v8.5l-3-3L3.5 8 8 12.5l4.5-4.5L11 6.5l-3 3V1H8zM1 14h14v1.5H1V14z"/></svg><span>匯入數據</span></button>
   </nav>
-  <div class="sidebar-footer" id="sidebarStatus">尚無資料</div>
+  <div class="sf" id="sidebarStatus">尚無資料</div>
 </aside>
 
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
-    <div class="topbar-left">
-      <div class="page-title" id="pageTitle">總覽</div>
-    </div>
+    <div class="topbar-left"><div class="page-title" id="pageTitle">總覽</div></div>
     <div class="topbar-actions">
-      <button class="btn" onclick="exportAll()">↓ 匯出</button>
-      <label class="btn btn-green" style="cursor:pointer" title="上傳投資明細.xlsx">
-        📋 匯入投資明細
-        <input type="file" id="quickDetailFile" accept=".xlsx,.xls" style="display:none" onchange="quickImportDetail(this.files[0])">
+      <button class="btn" onclick="nav('import')">↑ 匯入數據</button>
+      <label class="btn btn-accent" style="cursor:pointer" title="已實現.xlsx">
+        📋 已實現
+        <input type="file" id="qRFile" accept=".xlsx,.xls" style="display:none" onchange="quickLoad('realized',this.files[0])">
       </label>
-      <label class="btn btn-teal" style="cursor:pointer" title="上傳未實現.xlsx">
-        📈 匯入未實現
-        <input type="file" id="quickHoldFile" accept=".xlsx,.xls" style="display:none" onchange="quickImportHoldings(this.files[0])">
+      <label class="btn btn-green" style="cursor:pointer" title="投資明細.xlsx">
+        📊 投資明細
+        <input type="file" id="qDFile" accept=".xlsx,.xls" style="display:none" onchange="quickLoad('detail',this.files[0])">
+      </label>
+      <label class="btn btn-teal" style="cursor:pointer" title="未實現.xlsx">
+        📈 未實現
+        <input type="file" id="qHFile" accept=".xlsx,.xls" style="display:none" onchange="quickLoad('holdings',this.files[0])">
       </label>
     </div>
   </div>
@@ -255,14 +200,14 @@ th.r, td.r { text-align: right; }
 
   <!-- OVERVIEW -->
   <div id="panel-overview" class="panel active">
-    <div class="metrics-grid" id="metricsGrid"></div>
+    <div class="mg" id="metricsGrid"></div>
     <div class="charts-row c2">
       <div class="card" style="overflow:visible">
         <div class="card-head">
           <span class="card-title">月度損益走勢</span>
           <div class="legend">
-            <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>已實現</div>
-            <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>利息</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>損益</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>利息（負）</div>
           </div>
         </div>
         <div class="card-body"><div style="position:relative;height:210px"><canvas id="chartMonthly"></canvas></div></div>
@@ -271,35 +216,41 @@ th.r, td.r { text-align: right; }
         <div class="card-head"><span class="card-title">交易類別分佈</span></div>
         <div class="card-body">
           <div style="position:relative;height:140px"><canvas id="chartType"></canvas></div>
-          <div id="typeStats" style="margin-top:12px"></div>
+          <div id="typeStats" style="margin-top:10px"></div>
         </div>
       </div>
     </div>
     <div class="charts-row c22">
       <div class="card" style="overflow:visible"><div class="card-head"><span class="card-title">損益分佈</span></div><div class="card-body"><div style="position:relative;height:170px"><canvas id="chartDist"></canvas></div></div></div>
-      <div class="card" style="overflow:visible"><div class="card-head"><span class="card-title">前10大持倉未實現</span></div><div class="card-body"><div style="position:relative;height:170px"><canvas id="chartHold"></canvas></div></div></div>
+      <div class="card" style="overflow:visible"><div class="card-head"><span class="card-title">未實現損益排行</span></div><div class="card-body"><div style="position:relative;height:170px"><canvas id="chartHold"></canvas></div></div></div>
     </div>
   </div>
 
   <!-- REALIZED -->
   <div id="panel-realized" class="panel">
+    <div class="info-box" id="matchInfo"></div>
     <div class="card">
       <div class="toolbar">
         <select id="rStock" onchange="renderRealized()"><option value="">全部股票</option></select>
         <select id="rType" onchange="renderRealized()"><option value="">全部類別</option></select>
         <select id="rMonth" onchange="renderRealized()"><option value="">全部月份</option></select>
         <select id="rPnl" onchange="renderRealized()"><option value="">盈虧篩選</option><option value="win">獲利</option><option value="loss">虧損</option><option value="adj">已調整</option></select>
-        <input type="text" id="rSearch" placeholder="搜尋..." oninput="renderRealized()" style="width:110px">
+        <select id="rMatch" onchange="renderRealized()"><option value="">配對狀態</option><option value="matched">已配對</option><option value="unmatched">未配對</option></select>
+        <input type="text" id="rSearch" placeholder="搜尋..." oninput="renderRealized()" style="width:100px">
         <span class="ml-auto" id="rCount" style="font-size:11px;color:var(--text3)"></span>
       </div>
       <div class="tw" style="max-height:600px;overflow-y:auto">
         <table><thead><tr>
           <th>代號</th><th>名稱</th><th>賣出日期</th><th>類別</th>
           <th class="r">賣出價</th><th class="r">買入成本</th><th class="r">數量</th>
-          <th class="r">手續費</th><th class="r">交易稅</th><th class="r">融資利息</th>
-          <th class="r">原始損益</th><th class="r">調整金額</th><th class="r">最終損益</th>
-          <th class="r">報酬率</th><th>調整原因</th><th style="text-align:center">操作</th>
-        </tr></thead><tbody id="realizedBody"></tbody></table>
+          <th class="r">手續費</th><th class="r">交易稅</th>
+          <th class="r" style="background:var(--ambdim)">融資利息</th>
+          <th class="r">原始損益</th><th class="r">調整金額</th>
+          <th class="r">最終損益</th><th class="r">淨報酬率</th>
+          <th>配對</th><th style="text-align:center">操作</th>
+        </tr></thead>
+        <tbody id="realizedBody"></tbody>
+        </table>
       </div>
       <div id="realizedSum" style="padding:10px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);display:flex;gap:20px;flex-wrap:wrap"></div>
     </div>
@@ -307,18 +258,17 @@ th.r, td.r { text-align: right; }
 
   <!-- HOLDINGS -->
   <div id="panel-holdings" class="panel">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:8px;font-size:13px;background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 14px;box-shadow:var(--shadow)">
-        <span style="color:var(--text2);font-weight:500;white-space:nowrap">資料抓取日期</span>
-        <input type="date" id="holdDate" onchange="saveHoldDate()" style="background:none;border:none;color:var(--accent);font-weight:700;font-size:13px;font-family:inherit;outline:none;cursor:pointer">
-        <button class="btn btn-sm" onclick="document.getElementById('holdDate').showPicker?document.getElementById('holdDate').showPicker():null" style="padding:3px 8px">📅</button>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;background:var(--white);border:1px solid var(--border);border-radius:var(--rs);padding:8px 14px;box-shadow:var(--shadow)">
+        <span style="color:var(--text2);font-weight:500">資料抓取日期</span>
+        <input type="date" id="holdDate" onchange="onHoldDateChange()" style="background:none;border:none;color:var(--accent);font-weight:700;font-size:13px;font-family:inherit;outline:none;cursor:pointer">
       </div>
-      <span id="holdDateLabel" style="font-size:12px;color:var(--text3)"></span>
+      <button class="btn btn-sm" onclick="document.getElementById('holdDate').value='';onHoldDateChange()">清除日期</button>
     </div>
-    <div class="hold-summary" id="holdSummary"></div>
+    <div class="hs-grid" id="holdSummary"></div>
     <div class="card">
       <div class="toolbar">
-        <input type="text" id="holdSearch" placeholder="搜尋代號 / 名稱..." oninput="renderHoldings()" style="width:160px">
+        <input type="text" id="holdSearch" placeholder="搜尋代號/名稱..." oninput="renderHoldings()" style="width:160px">
         <select id="holdSort" onchange="renderHoldings()">
           <option value="pnl_d">損益：高→低</option><option value="pnl_a">損益：低→高</option>
           <option value="ret_d">報酬率：高→低</option><option value="mkt_d">市值：高→低</option>
@@ -345,14 +295,15 @@ th.r, td.r { text-align: right; }
         <select id="dBS" onchange="renderDetail()"><option value="">買+賣</option><option value="買">買入</option><option value="賣">賣出</option></select>
         <select id="dType" onchange="renderDetail()"><option value="">全部類別</option></select>
         <select id="dMonth" onchange="renderDetail()"><option value="">全部月份</option></select>
-        <input type="text" id="dSearch" placeholder="搜尋..." oninput="renderDetail()" style="width:110px">
+        <input type="text" id="dSearch" placeholder="搜尋..." oninput="renderDetail()" style="width:100px">
         <span class="ml-auto" id="dCount" style="font-size:11px;color:var(--text3)"></span>
       </div>
       <div class="tw" style="max-height:600px;overflow-y:auto">
         <table><thead><tr>
           <th>日期</th><th>代號</th><th>名稱</th><th>買/賣</th><th>類別</th>
           <th class="r">數量</th><th class="r">單價</th><th class="r">總金額</th>
-          <th class="r">手續費</th><th class="r">交易稅</th><th class="r">融資利息</th>
+          <th class="r">手續費</th><th class="r">交易稅</th>
+          <th class="r" style="background:var(--ambdim)">融資利息</th>
           <th class="r">融資金額</th><th class="r">損益</th>
         </tr></thead><tbody id="detailBody"></tbody></table>
       </div>
@@ -372,14 +323,11 @@ th.r, td.r { text-align: right; }
 
   <!-- ADJUSTMENTS -->
   <div id="panel-adjustments" class="panel">
-    <div class="info-box">
-      調整紀錄會直接影響「已實現損益」頁面的最終損益。點「已實現損益」各筆的「調整」按鈕也可以快速修改。
-    </div>
-    <div class="form-grid" style="margin-bottom:14px">
+    <div class="form-grid">
       <div class="form-card">
         <h3>新增調整項目</h3>
         <div class="fr">
-          <div class="fg"><label>股票代號</label><input type="text" id="adjCode" placeholder="6669" oninput="adjCodeHint()"></div>
+          <div class="fg"><label>股票代號</label><input type="text" id="adjCode" placeholder="6669" oninput="adjHint()"></div>
           <div class="fg"><label>股票名稱</label><input type="text" id="adjName" placeholder="緯穎"></div>
         </div>
         <div class="fr">
@@ -395,45 +343,30 @@ th.r, td.r { text-align: right; }
           </div>
         </div>
         <div class="fg">
-          <label>調整金額（可同時輸入多項，以逗號分隔；正=增加收益，負=減少）</label>
+          <label>調整金額（可填多個用逗號分隔；正=增加收益，負=減少）</label>
           <input type="text" id="adjAmounts" placeholder="例：-104623 或 -104623,-5000">
         </div>
-        <div class="fg"><label>備註說明</label><input type="text" id="adjNote" placeholder="例：未賣出回補手續費 + 額外費用"></div>
+        <div class="fg"><label>備註說明</label><input type="text" id="adjNote" placeholder="例：未賣出回補手續費"></div>
         <button class="btn btn-green" onclick="addAdj()" style="width:100%">新增調整</button>
         <div id="adjMsg" class="rmsg" style="display:none"></div>
       </div>
       <div class="form-card">
-        <h3>融資轉現股 / 融資追繳</h3>
+        <h3>融資追繳 / 融資轉現股</h3>
         <div class="tab-bar">
           <button class="tab-btn active" onclick="switchTab(this,'mc-tab')">融資追繳</button>
           <button class="tab-btn" onclick="switchTab(this,'m2s-tab')">融資轉現股</button>
         </div>
         <div id="mc-tab" class="tab-content active">
-          <div class="fr">
-            <div class="fg"><label>追繳日期</label><input type="date" id="mcDate"></div>
-            <div class="fg"><label>追繳金額（元）</label><input type="number" id="mcAmount" placeholder="301438"></div>
-          </div>
-          <div class="fr">
-            <div class="fg"><label>相關代號</label><input type="text" id="mcCode" placeholder="6669"></div>
-            <div class="fg"><label>相關名稱</label><input type="text" id="mcName" placeholder="緯穎"></div>
-          </div>
+          <div class="fr"><div class="fg"><label>追繳日期</label><input type="date" id="mcDate"></div><div class="fg"><label>追繳金額（元）</label><input type="number" id="mcAmount" placeholder="301438"></div></div>
+          <div class="fr"><div class="fg"><label>相關代號</label><input type="text" id="mcCode" placeholder="6669"></div><div class="fg"><label>相關名稱</label><input type="text" id="mcName" placeholder="緯穎"></div></div>
           <div class="fg"><label>備註</label><input type="text" id="mcNote" placeholder="0000024214089780 追繳扣"></div>
           <button class="btn btn-danger" onclick="addMarginCall()" style="width:100%">記錄追繳扣款</button>
           <div id="mcMsg" class="rmsg" style="display:none"></div>
         </div>
         <div id="m2s-tab" class="tab-content">
-          <div class="fr">
-            <div class="fg"><label>轉換日期</label><input type="date" id="m2sDate"></div>
-            <div class="fg"><label>股票代號</label><input type="text" id="m2sCode" placeholder="1101"></div>
-          </div>
-          <div class="fr">
-            <div class="fg"><label>股票名稱</label><input type="text" id="m2sName" placeholder="台泥"></div>
-            <div class="fg"><label>股數</label><input type="number" id="m2sShares" placeholder="2000"></div>
-          </div>
-          <div class="fr">
-            <div class="fg"><label>原融資成本（元）</label><input type="number" id="m2sCost" placeholder="68920"></div>
-            <div class="fg"><label>需補繳金額（元）</label><input type="number" id="m2sPay" placeholder="41352"></div>
-          </div>
+          <div class="fr"><div class="fg"><label>轉換日期</label><input type="date" id="m2sDate"></div><div class="fg"><label>股票代號</label><input type="text" id="m2sCode" placeholder="1101"></div></div>
+          <div class="fr"><div class="fg"><label>股票名稱</label><input type="text" id="m2sName" placeholder="台泥"></div><div class="fg"><label>股數</label><input type="number" id="m2sShares" placeholder="2000"></div></div>
+          <div class="fr"><div class="fg"><label>原融資成本</label><input type="number" id="m2sCost" placeholder="68920"></div><div class="fg"><label>需補繳金額</label><input type="number" id="m2sPay" placeholder="41352"></div></div>
           <div class="fg"><label>備註</label><input type="text" id="m2sNote" placeholder="融資轉現股"></div>
           <button class="btn btn-accent" onclick="addMarginToSpot()" style="width:100%">記錄融資轉現股</button>
           <div id="m2sMsg" class="rmsg" style="display:none"></div>
@@ -453,45 +386,47 @@ th.r, td.r { text-align: right; }
   <div id="panel-import" class="panel">
     <div class="form-grid">
       <div>
+        <!-- 已實現 -->
         <div class="form-card" style="margin-bottom:14px">
-          <h3>匯入投資明細</h3>
-          <div class="info-box">
-            上傳「投資明細.xlsx」，包含買入與賣出所有記錄。系統自動解析，賣出筆損益直接來自欄位，不需要配對。
+          <h3>① 匯入已實現損益</h3>
+          <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.7">上傳「已實現.xlsx」。系統自動從投資明細中比對融資利息（代號+日期+數量+賣價）。</p>
+          <div id="dropR" class="drop-zone" onclick="document.getElementById('fileR').click()">
+            <div style="font-size:26px;margin-bottom:6px">📋</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:3px">已實現.xlsx</div>
+            <div style="font-size:11px;color:var(--text3)">.xlsx 或 .xls</div>
           </div>
-          <div id="dropDetail" class="drop-zone" onclick="document.getElementById('detailFileInput').click()">
-            <div style="font-size:28px;margin-bottom:8px">📂</div>
-            <div style="font-size:13px;font-weight:600;margin-bottom:3px">點擊選擇或拖放 Excel 檔案</div>
-            <div style="font-size:11px;color:var(--text3)">投資明細.xlsx</div>
-          </div>
-          <input type="file" id="detailFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleDetailFile(this.files[0])">
-          <div id="detailSheetSel" style="display:none;margin-bottom:10px">
-            <div class="fg"><label>工作表</label><select id="detailSheetName" onchange="previewDetail()" style="width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);border-radius:var(--r-sm);padding:7px 10px;font-size:13px;font-family:inherit;outline:none"></select></div>
-          </div>
-          <div id="detailPreview" style="display:none;margin-bottom:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;font-size:12px;color:var(--text2)"></div>
-          <div class="fg"><label>匯入方式</label>
-            <select id="detailImportMode" style="width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);border-radius:var(--r-sm);padding:7px 10px;font-size:13px;font-family:inherit;outline:none">
-              <option value="replace">取代（清除重匯）</option>
-              <option value="append">新增（保留現有）</option>
-            </select>
-          </div>
-          <button class="btn btn-green" id="detailImportBtn" onclick="importDetailExcel()" style="width:100%" disabled>請先上傳 Excel 檔案</button>
-          <div id="detailMsg" class="rmsg" style="display:none;margin-top:10px"></div>
+          <input type="file" id="fileR" accept=".xlsx,.xls" style="display:none" onchange="handleFile('realized',this.files[0])">
+          <div id="previewR" style="display:none;margin-bottom:10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px;font-size:12px;color:var(--text2)"></div>
+          <button class="btn btn-accent" id="btnR" onclick="doImport('realized')" style="width:100%" disabled>請先上傳</button>
+          <div id="msgR" class="rmsg" style="display:none;margin-top:8px"></div>
         </div>
-
+        <!-- 投資明細 -->
+        <div class="form-card" style="margin-bottom:14px">
+          <h3>② 匯入投資明細</h3>
+          <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.7">上傳「投資明細.xlsx」。提供融資利息資料供已實現損益配對使用。</p>
+          <div id="dropD" class="drop-zone" onclick="document.getElementById('fileD').click()">
+            <div style="font-size:26px;margin-bottom:6px">📊</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:3px">投資明細.xlsx</div>
+            <div style="font-size:11px;color:var(--text3)">.xlsx 或 .xls</div>
+          </div>
+          <input type="file" id="fileD" accept=".xlsx,.xls" style="display:none" onchange="handleFile('detail',this.files[0])">
+          <div id="previewD" style="display:none;margin-bottom:10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px;font-size:12px;color:var(--text2)"></div>
+          <button class="btn btn-green" id="btnD" onclick="doImport('detail')" style="width:100%" disabled>請先上傳</button>
+          <div id="msgD" class="rmsg" style="display:none;margin-top:8px"></div>
+        </div>
+        <!-- 未實現 -->
         <div class="form-card">
-          <h3>匯入未實現損益</h3>
-          <div id="dropHold" class="drop-zone" onclick="document.getElementById('holdFileInput').click()">
-            <div style="font-size:24px;margin-bottom:6px">📂</div>
-            <div style="font-size:13px;font-weight:600;margin-bottom:3px">點擊選擇或拖放 Excel 檔案</div>
-            <div style="font-size:11px;color:var(--text3)">未實現.xlsx</div>
+          <h3>③ 匯入未實現損益</h3>
+          <p style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.7">上傳「未實現.xlsx」（未實現工作表）。</p>
+          <div id="dropH" class="drop-zone" onclick="document.getElementById('fileH').click()">
+            <div style="font-size:26px;margin-bottom:6px">📈</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:3px">未實現.xlsx</div>
+            <div style="font-size:11px;color:var(--text3)">.xlsx 或 .xls</div>
           </div>
-          <input type="file" id="holdFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleHoldFile(this.files[0])">
-          <div id="holdSheetSel" style="display:none;margin-bottom:10px">
-            <div class="fg"><label>工作表</label><select id="holdSheetName" onchange="previewHold()" style="width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);border-radius:var(--r-sm);padding:7px 10px;font-size:13px;font-family:inherit;outline:none"></select></div>
-          </div>
-          <div id="holdPreview" style="display:none;margin-bottom:10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;font-size:12px;color:var(--text2)"></div>
-          <button class="btn btn-teal" id="holdImportBtn" onclick="importHoldExcel()" style="width:100%" disabled>請先上傳 Excel 檔案</button>
-          <div id="holdingsMsg" class="rmsg" style="display:none;margin-top:8px"></div>
+          <input type="file" id="fileH" accept=".xlsx,.xls" style="display:none" onchange="handleFile('holdings',this.files[0])">
+          <div id="previewH" style="display:none;margin-bottom:10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px;font-size:12px;color:var(--text2)"></div>
+          <button class="btn btn-teal" id="btnH" onclick="doImport('holdings')" style="width:100%" disabled>請先上傳</button>
+          <div id="msgH" class="rmsg" style="display:none;margin-top:8px"></div>
         </div>
       </div>
 
@@ -499,28 +434,30 @@ th.r, td.r { text-align: right; }
         <h3>資料狀態</h3>
         <div id="dataInfo" style="font-size:13px;line-height:2.3;color:var(--text2);margin-bottom:18px"></div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <button class="btn" onclick="exportAll()" style="text-align:left">↓ 匯出已實現損益 CSV</button>
-          <button class="btn" onclick="exportDetailCSV()" style="text-align:left">↓ 匯出投資明細 CSV</button>
-          <button class="btn" onclick="exportHoldCSV()" style="text-align:left">↓ 匯出未實現持倉 CSV</button>
-          <button class="btn" onclick="exportAdjCSV()" style="text-align:left">↓ 匯出調整紀錄 CSV</button>
+          <button class="btn" onclick="exportRealized()" style="text-align:left">↓ 匯出已實現損益 CSV</button>
+          <button class="btn" onclick="exportDetail()" style="text-align:left">↓ 匯出投資明細 CSV</button>
+          <button class="btn" onclick="exportHold()" style="text-align:left">↓ 匯出未實現持倉 CSV</button>
+          <button class="btn" onclick="exportAdj()" style="text-align:left">↓ 匯出調整紀錄 CSV</button>
           <hr style="border:none;border-top:1px solid var(--border);margin:4px 0">
           <button class="btn btn-danger" onclick="if(confirm('確定清除全部資料？'))clearAll()">🗑 清除全部資料</button>
         </div>
         <div style="margin-top:14px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);padding-top:12px;line-height:1.8">
-          資料儲存於瀏覽器 localStorage。<br>建議定期匯出 CSV 備份。
+          建議匯入順序：①已實現 → ②投資明細（立即配對利息）→ ③未實現<br>
+          或三個都上傳後按「重新配對」。
         </div>
+        <button class="btn btn-amber" onclick="runMatch()" style="width:100%;margin-top:10px">🔗 重新配對融資利息</button>
       </div>
     </div>
   </div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
-</div><!-- /app -->
+  </div>
+</div>
+</div>
 
-<!-- ADJUST MODAL -->
+<!-- MODAL: 調整損益 / 修改利息 -->
 <div class="modal-overlay" id="adjModal">
   <div class="modal">
-    <h3>調整損益 <button class="modal-close" onclick="closeAdjModal()">×</button></h3>
+    <h3 id="adjModalTitle">調整損益 <button class="modal-close" onclick="closeModal()">×</button></h3>
     <div id="adjModalContent"></div>
   </div>
 </div>
@@ -529,479 +466,649 @@ th.r, td.r { text-align: right; }
 // ══════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════
-let details = [];      // 所有投資明細（買+賣）
-let holdings = [];     // 未實現持倉
-let adjustments = [];  // 調整紀錄
-let holdDate = '';     // 未實現資料抓取日期
+let realized = [];   // 已實現損益（已實現.xlsx解析）
+let details  = [];   // 投資明細（所有買賣）
+let holdings = [];   // 未實現持倉
+let adjustments = [];
+let holdDate = '';
+let _wbs = {};       // 暫存 workbooks
+let _modalId = null;
 let charts = {};
-let detailWB = null, holdWB = null;
-let _modalCode = null;
 
-const ADJ_REASONS = {
-  fee_rebuy: '未賣出回補資金',
-  margin_transfer: '融資轉現股',
-  margin_call: '融資追繳',
-  pnl_fix: '損益修正',
-  other: '其他'
-};
-const PAGES = {
-  overview:'總覽', realized:'已實現損益', holdings:'未實現損益',
-  detail:'投資明細', monthly:'月度分析', adjustments:'調整紀錄', import:'匯入數據'
-};
+const ADJ_REASONS = {fee_rebuy:'未賣出回補資金',margin_transfer:'融資轉現股',margin_call:'融資追繳',pnl_fix:'損益修正',other:'其他'};
+const PAGES = {overview:'總覽',realized:'已實現損益',holdings:'未實現損益',detail:'投資明細',monthly:'月度分析',adjustments:'調整紀錄',import:'匯入數據'};
 
-// ══════════════════════════════════════════
-//  STORAGE
-// ══════════════════════════════════════════
-function save() {
-  try {
-    localStorage.setItem('v3_details', JSON.stringify(details));
-    localStorage.setItem('v3_holdings', JSON.stringify(holdings));
-    localStorage.setItem('v3_adjs', JSON.stringify(adjustments));
-    localStorage.setItem('v3_holdDate', holdDate);
-  } catch(e) {}
+// ══ Storage ══
+function save(){
+  try{
+    localStorage.setItem('v4_r',JSON.stringify(realized));
+    localStorage.setItem('v4_d',JSON.stringify(details));
+    localStorage.setItem('v4_h',JSON.stringify(holdings));
+    localStorage.setItem('v4_a',JSON.stringify(adjustments));
+    localStorage.setItem('v4_hdate',holdDate);
+  }catch(e){}
 }
-function load() {
-  try {
-    details = JSON.parse(localStorage.getItem('v3_details') || '[]');
-    holdings = JSON.parse(localStorage.getItem('v3_holdings') || '[]');
-    adjustments = JSON.parse(localStorage.getItem('v3_adjs') || '[]');
-    holdDate = localStorage.getItem('v3_holdDate') || '';
-    // ensure adjAmount field
-    adjustments.forEach(a => { if(a.amount === undefined) a.amount = a.amounts ? a.amounts.reduce((s,v)=>s+v,0) : 0; });
-  } catch(e) {}
+function load(){
+  try{
+    realized    = JSON.parse(localStorage.getItem('v4_r')||'[]');
+    details     = JSON.parse(localStorage.getItem('v4_d')||'[]');
+    holdings    = JSON.parse(localStorage.getItem('v4_h')||'[]');
+    adjustments = JSON.parse(localStorage.getItem('v4_a')||'[]');
+    holdDate    = localStorage.getItem('v4_hdate')||'';
+  }catch(e){}
 }
 
-// ══════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════
-const fmt = n => Math.round(n).toLocaleString('zh-TW');
-const fmtD = n => n.toLocaleString('zh-TW', {minimumFractionDigits:2, maximumFractionDigits:4});
-const fmtP = n => (n>0?'+':'') + n.toFixed(2) + '%';
-const cc = n => n>0 ? 'pos' : n<0 ? 'neg' : '';
-const gm = d => { const p = (d||'').replace(/\//g,'-').split('-'); return p[0]+'/'+String(p[1]).padStart(2,'0'); };
-const xlDate = v => {
+// ══ Helpers ══
+const fmt  = n => Math.round(n).toLocaleString('zh-TW');
+const fmtD = n => n.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:4});
+const fmtP = n => (n>0?'+':'')+n.toFixed(2)+'%';
+const cc   = n => n>0?'pos':n<0?'neg':'';
+const gm   = d => { const p=(d||'').replace(/\//g,'-').split('-'); return p[0]+'/'+String(p[1]).padStart(2,'0'); };
+const nn   = v => parseFloat(String(v||'').replace(/[,\s+]/g,''))||0;
+function xlDate(v){
   if(!v) return '';
-  if(typeof v === 'string' && v.includes('/')) return v;
-  const d = new Date(v);
+  // Already YYYY/MM/DD format
+  if(typeof v==='string'&&v.match(/^\d{4}\/\d{2}\/\d{2}/)) return v.slice(0,10);
+  // Has slashes but might be M/D/YYYY (SheetJS sometimes returns this)
+  if(typeof v==='string'&&v.includes('/')){
+    const p=v.split('/');
+    if(p.length===3){
+      if(p[0].length===4) return v.slice(0,10); // YYYY/MM/DD
+      // M/D/YYYY or MM/DD/YYYY
+      return `${p[2].slice(0,4)}/${String(p[0]).padStart(2,'0')}/${String(p[1]).padStart(2,'0')}`;
+    }
+  }
+  const d=new Date(v);
   if(!isNaN(d.getTime())) return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
   return String(v).split('T')[0].replace(/-/g,'/');
-};
-const n = v => parseFloat(String(v||'').replace(/[,\s+]/g,'')) || 0;
-
-// 取得這支股票的調整合計
-function getAdjForCode(code) {
-  return adjustments.filter(a => a.code === code).reduce((s,a) => s+a.amount, 0);
-}
-// 取得已實現賣出清單（含調整）
-function getSellList() {
-  return details.filter(d => d.bs === '賣');
-}
-// 某筆賣出記錄的調整金額（按日期+代號匹配）
-function getTradeAdj(d) {
-  // adjPnl: inline調整；加上 adjustments 中同代號的
-  return (d.adjPnl !== null && d.adjPnl !== undefined ? d.adjPnl - d.pnl : 0);
-}
-// 最終損益
-function finalPnl(d) {
-  if(d.adjPnl !== null && d.adjPnl !== undefined) return d.adjPnl;
-  return d.pnl;
 }
 
-// ══════════════════════════════════════════
-//  NAV
-// ══════════════════════════════════════════
-function nav(name) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+// finalPnl: adjPnl overrides, else original pnl
+const finalPnl = r => (r.adjPnl!==null&&r.adjPnl!==undefined) ? r.adjPnl : r.pnl;
+const adjDiff  = r => (r.adjPnl!==null&&r.adjPnl!==undefined) ? r.adjPnl - r.pnl : 0;
+const extAdjTotal = () => adjustments.reduce((s,a)=>s+a.amount,0);
+
+// ══ Nav ══
+function nav(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
-  const b = document.querySelector(`.nav-item[onclick="nav('${name}')"]`);
-  if(b) b.classList.add('active');
-  document.getElementById('pageTitle').textContent = PAGES[name] || name;
+  const b=document.querySelector(`.ni[onclick="nav('${name}')"]`);if(b)b.classList.add('active');
+  document.getElementById('pageTitle').textContent=PAGES[name]||name;
 }
-function switchTab(btn, id) {
-  const p = btn.closest('.form-card') || btn.closest('.panel');
-  if(p) { p.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); p.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); }
-  btn.classList.add('active'); document.getElementById(id).classList.add('active');
-}
-
-// ══════════════════════════════════════════
-//  METRICS
-// ══════════════════════════════════════════
-function renderMetrics() {
-  const sells = getSellList();
-  const totalPnl = sells.reduce((s,d) => s+finalPnl(d), 0);
-  const totalInterest = sells.reduce((s,d) => s+(d.interest||0), 0);
-  const totalAdj = adjustments.reduce((s,a) => s+a.amount, 0) + sells.reduce((s,d) => s+getTradeAdj(d), 0);
-  const totalCost = sells.reduce((s,d) => s+(d.buyCost||0), 0);
-  const wins = sells.filter(d => finalPnl(d) > 0).length;
-  const wr = sells.length ? wins/sells.length*100 : 0;
-  const ret = totalCost > 0 ? totalPnl/totalCost*100 : 0;
-  const maxW = sells.length ? Math.max(...sells.map(d=>finalPnl(d))) : 0;
-  const maxL = sells.length ? Math.min(...sells.map(d=>finalPnl(d))) : 0;
-  const hPnl = holdings.reduce((s,h) => s+h.pnl, 0);
-  const hMkt = holdings.reduce((s,h) => s+h.mktVal, 0);
-  const netTotal = totalPnl + totalAdj - totalInterest;
-
-  document.getElementById('metricsGrid').innerHTML = `
-    <div class="mc c-${cc(totalPnl)==='pos'?'green':'red'}"><div class="mc-label">已實現損益</div><div class="mc-value ${cc(totalPnl)}">${totalPnl>=0?'+':''}${fmt(totalPnl)}</div><div class="mc-sub">${sells.length}筆 · 勝率${wr.toFixed(0)}%</div></div>
-    <div class="mc c-${cc(ret)==='pos'?'green':'red'}"><div class="mc-label">報酬率</div><div class="mc-value ${cc(ret)}">${fmtP(ret)}</div><div class="mc-sub">以買入成本計算</div></div>
-    <div class="mc c-accent"><div class="mc-label">未實現損益</div><div class="mc-value ${cc(hPnl)}">${hPnl>=0?'+':''}${fmt(hPnl)}</div><div class="mc-sub">持倉市值 ${fmt(hMkt)}</div></div>
-    <div class="mc c-amber"><div class="mc-label">融資利息合計</div><div class="mc-value neg">-${fmt(totalInterest)}</div><div class="mc-sub">已實現部位</div></div>
-    <div class="mc c-purple"><div class="mc-label">調整合計</div><div class="mc-value ${cc(totalAdj)}">${totalAdj>=0?'+':''}${fmt(totalAdj)}</div><div class="mc-sub">${adjustments.length}筆外部調整</div></div>
-    <div class="mc c-${cc(netTotal)==='pos'?'green':'red'}"><div class="mc-label">淨收益（損益+調整−利息）</div><div class="mc-value ${cc(netTotal)}">${netTotal>=0?'+':''}${fmt(netTotal)}</div></div>
-    <div class="mc c-green"><div class="mc-label">最大單筆獲利</div><div class="mc-value pos">+${fmt(maxW)}</div></div>
-    <div class="mc c-red"><div class="mc-label">最大單筆虧損</div><div class="mc-value neg">${fmt(maxL)}</div></div>`;
+function switchTab(btn,id){
+  const p=btn.closest('.form-card')||btn.closest('.panel');
+  if(p){p.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));p.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));}
+  btn.classList.add('active');document.getElementById(id).classList.add('active');
 }
 
-// ══════════════════════════════════════════
-//  CHARTS
-// ══════════════════════════════════════════
-function dc(k) { if(charts[k]) { charts[k].destroy(); charts[k]=null; } }
+// ══ MATCHING ══
+// 正規化函數（處理型別不一致：int/str/datetime/float with commas）
+function normCode(v){ return String(v||'').trim(); }
+function normDate(v){
+  if(!v) return '';
+  const s = String(v);
+  // datetime string "2024-05-10T00:00:00" or "2024-05-10 00:00:00" → "2024/05/10"
+  // already "2024/05/10" stays
+  return s.slice(0,10).replace(/-/g,'/');
+}
+function normQty(v){ return Math.round(parseFloat(String(v||'0').replace(/,/g,''))); }
+function normPrice(v){ return Math.round(parseFloat(String(v||'0').replace(/,/g,'')) * 100); } // *100 避免浮點誤差
 
-function renderChartMonthly() {
-  dc('m');
+function matchKey(code, date, qty, price){
+  return `${normCode(code)}|${normDate(date)}|${normQty(qty)}|${normPrice(price)}`;
+}
+
+function buildDetailMap(){
   const m = {};
-  getSellList().forEach(d => {
-    const k = gm(d.date);
-    if(!m[k]) m[k] = {pnl:0, interest:0};
-    m[k].pnl += finalPnl(d);
-    m[k].interest += d.interest||0;
-  });
-  const labels = Object.keys(m).sort(), ps = labels.map(l=>m[l].pnl), is2 = labels.map(l=>-m[l].interest);
-  charts.m = new Chart(document.getElementById('chartMonthly').getContext('2d'), {
-    type:'bar', data:{labels, datasets:[
-      {data:ps, backgroundColor:ps.map(v=>v>=0?'rgba(12,166,120,.7)':'rgba(224,49,49,.7)'), borderRadius:4, order:2, label:'損益'},
-      {data:is2, backgroundColor:'rgba(230,119,0,.5)', borderRadius:4, order:1, label:'利息(負)'}
-    ]},
-    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-      scales:{y:{ticks:{callback:v=>(v>=0?'+':'')+(v/10000).toFixed(0)+'萬', color:'#9ca3bf', font:{size:10}}, grid:{color:'rgba(0,0,0,.04)'}},
-              x:{ticks:{color:'#9ca3bf', font:{size:10}, maxRotation:45, autoSkip:false}, grid:{display:false}}}}});
+  for(const d of details){
+    if(d.bs!=='賣') continue;
+    const k = matchKey(d.code, d.date, d.qty, d.price);
+    if(!m[k]) m[k]=[];
+    m[k].push({interest:d.interest||0, loan:d.loan||0, id:d.id});
+  }
+  return m;
 }
 
-function renderChartType() {
+function runMatch(){
+  if(!details.length){ showToast('請先匯入投資明細',false); return; }
+  const dmap = buildDetailMap();
+  let matched=0, unmatched=0;
+  for(const r of realized){
+    if(r.interestManual) continue; // 手動設定的不覆蓋
+    const k = matchKey(r.code, r.sellDate, r.qty, r.sellPrice);
+    if(dmap[k]&&dmap[k].length>0){
+      const hit = dmap[k].shift();
+      r.interest = hit.interest;
+      r.loan = hit.loan;
+      r.matched = true;
+      matched++;
+    } else {
+      r.matched = false;
+      if(!r.interest) r.interest = 0;
+      unmatched++;
+    }
+  }
+  save(); refreshAll();
+  showToast(`✓ 配對完成：${matched} 筆成功，${unmatched} 筆未配對（現股/現沖無利息為正常）`,true);
+}
+
+// ══ PARSE ══
+// 已實現.xlsx 欄位：0:代號 1:名稱 2:賣出日期 3:委託書號 4:交易類別 5:賣價
+//                   6:買入日期 7:委託書號 8:類別 9:買價 10:數量 11:沖銷成本
+//                   12:手續費 13:交易稅 14:盈虧 15:P欄備註
+function parseRealized(rows){
+  const res=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];
+    const code=String(r[0]||'').trim();
+    if(!code||!code.match(/^\d/)||String(r[14]||'').startsWith('=')) continue;
+    const pnlRaw=String(r[14]||'').replace(/,/g,'');
+    if(pnlRaw.startsWith('=')) continue;
+    const pnlN=parseFloat(pnlRaw);if(isNaN(pnlN)) continue;
+    const tradeType=String(r[4]||'').trim();
+    if(['匯撥','追繳','現償'].some(s=>tradeType.includes(s))) continue;
+    const extraFee=nn(r[15]);
+    res.push({
+      id: Date.now()+Math.random(),
+      code, name:String(r[1]||'').trim(),
+      sellDate: xlDate(r[2]), buyDate: xlDate(r[6]),
+      tradeType, sellPrice:nn(r[5]), buyPrice:nn(r[9]),
+      qty:nn(r[10]), cost:nn(r[11]),
+      fee:nn(r[12]), tax:nn(r[13]), pnl:pnlN,
+      extraFee, // P欄手動填的額外費用
+      interest:0, loan:0, matched:false,
+      adjPnl: extraFee ? pnlN-Math.abs(extraFee) : null,
+      adjBaseVal:undefined, adjExtraFee:extraFee||0,
+      adjNote: extraFee ? `沒賣出回補手續費 ${fmt(Math.abs(extraFee))}` : '',
+      interestManual: false
+    });
+  }
+  return res;
+}
+
+// 投資明細 欄位：0:日期 1:代號 2:名稱 3:種類 4:買/賣 5:類別
+//                6:數量 7:單價 8:總額 9:手續費 10:交易稅 11:應收付款
+//                12:融資金額 13:自備款 14:融資利息 19:損益
+function parseDetail(rows){
+  const res=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];
+    if(!r[0]||String(r[0]).includes('TWD')||String(r[0]).includes('總金額')) continue;
+    const code=String(r[1]||'').trim(); if(!code) continue;
+    const bs=String(r[4]||'').trim();
+    const tradeType=String(r[5]||'').trim();
+    const qty=nn(r[6]), price=nn(r[7]);
+    res.push({
+      id:Date.now()+Math.random(),
+      date:xlDate(r[0]), code, name:String(r[2]||'').trim(),
+      bs, tradeType, qty, price,
+      total:nn(r[8]), fee:nn(r[9]), tax:nn(r[10]),
+      cashflow:nn(r[11]), loan:nn(r[12]),
+      interest:nn(r[14]),
+      pnl:bs==='賣'?nn(r[19]):0
+    });
+  }
+  return res;
+}
+
+// 未實現：col[1]=代號 col[2]=名稱 col[3]=類別 col[4]=庫存...
+function parseHoldings(rows){
+  const res=[];
+  const ns=v=>parseFloat(String(v||'').replace(/[,+%\s]/g,''))||0;
+  const s2=v=>String(v||'').trim();
+  for(let i=2;i<rows.length;i++){
+    const r=rows[i];
+    if(String(r[0]||'').includes('總市值')||String(r[0]||'').includes('Total')) continue;
+    if(String(r[0]||'').trim()!=='') continue;
+    const code=s2(r[1]),qty=ns(r[4]);if(!code||!qty) continue;
+    const retStr=s2(r[13]);
+    res.push({
+      code,name:s2(r[2])||code,tradeType:s2(r[3])||'現股',qty,
+      price:ns(r[5]),mktVal:ns(r[6]),
+      costAmt:s2(r[7])==='-'?0:ns(r[7]),avgPrice:s2(r[8])==='-'?0:ns(r[8]),
+      fee:ns(r[9]),tradeTax:ns(r[10]),interest:ns(r[11]),
+      pnl:ns(r[12]),ret:retStr==='-'?0:parseFloat(retStr.replace(/[+%]/g,''))||0
+    });
+  }
+  return res;
+}
+
+// ══ FILE HANDLING ══
+function handleFile(type, file){
+  if(!file) return;
+  const zoneId={realized:'dropR',detail:'dropD',holdings:'dropH'}[type];
+  const zone=document.getElementById(zoneId);
+  zone.innerHTML='<div style="font-size:24px;margin-bottom:6px">⏳</div><div style="font-size:13px">讀取中...</div>';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+      _wbs[type]=wb;
+      // auto select sheet
+      let sheetIdx=0;
+      if(type==='realized') sheetIdx=wb.SheetNames.findIndex(s=>s.includes('已實現'))||0;
+      if(type==='holdings') sheetIdx=Math.max(0,wb.SheetNames.findIndex(s=>s.includes('未實現')));
+      _wbs[type]._idx=sheetIdx<0?0:sheetIdx;
+      zone.innerHTML=`<div style="font-size:24px;margin-bottom:6px">✅</div><div style="font-size:13px;font-weight:600">${file.name}</div><div style="font-size:11px;color:var(--text3)">${wb.SheetNames[_wbs[type]._idx]}</div>`;
+      previewFile(type);
+    }catch(err){
+      zone.innerHTML=`<div style="font-size:24px;margin-bottom:6px">❌</div><div style="font-size:13px;color:var(--red)">讀取失敗：${err.message}</div>`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function previewFile(type){
+  const wb=_wbs[type]; if(!wb) return;
+  const sheet=wb.Sheets[wb.SheetNames[wb._idx]];
+  const rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false});
+  const previewEl=document.getElementById('preview'+{realized:'R',detail:'D',holdings:'H'}[type]);
+  const btn=document.getElementById('btn'+{realized:'R',detail:'D',holdings:'H'}[type]);
+  previewEl.style.display='';
+
+  if(type==='realized'){
+    const parsed=parseRealized(rows);
+    const withFee=parsed.filter(r=>r.extraFee).length;
+    previewEl.innerHTML=`偵測到 <strong>${parsed.length} 筆</strong>已實現損益${withFee?`，${withFee} 筆有P欄回補費用`:''}`;
+    btn.disabled=!parsed.length;
+    btn.textContent=parsed.length?`匯入 ${parsed.length} 筆已實現損益`:'偵測不到資料';
+  } else if(type==='detail'){
+    const parsed=parseDetail(rows);
+    const sells=parsed.filter(d=>d.bs==='賣');
+    const withInt=parsed.filter(d=>d.interest>0).length;
+    previewEl.innerHTML=`偵測到 <strong>${parsed.length} 筆</strong>（買${parsed.length-sells.length}/賣${sells.length}），${withInt} 筆有融資利息`;
+    btn.disabled=!parsed.length;
+    btn.textContent=parsed.length?`匯入 ${parsed.length} 筆投資明細`:'偵測不到資料';
+  } else {
+    let cnt=0;
+    for(let i=2;i<rows.length;i++){
+      if(String(rows[i][0]||'').includes('總市值')) continue;
+      if(String(rows[i][0]||'').trim()!==''||!rows[i][1]) continue;
+      cnt++;
+    }
+    previewEl.innerHTML=`偵測到 <strong>${cnt} 支</strong>持股`;
+    btn.disabled=!cnt;
+    btn.textContent=cnt?`匯入 ${cnt} 支持股`:'偵測不到資料';
+  }
+}
+
+function doImport(type){
+  const wb=_wbs[type]; if(!wb) return;
+  const sheet=wb.Sheets[wb.SheetNames[wb._idx]];
+  const rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false});
+  const msgId='msg'+{realized:'R',detail:'D',holdings:'H'}[type];
+
+  if(type==='realized'){
+    realized=parseRealized(rows);
+    if(!details.length){ showMsg(msgId,`✓ 已匯入 ${realized.length} 筆（請接著匯入投資明細以配對融資利息）`,true); }
+    else { runMatch(); showMsg(msgId,`✓ 已匯入 ${realized.length} 筆並自動配對利息`,true); }
+  } else if(type==='detail'){
+    details=parseDetail(rows);
+    if(realized.length){ runMatch(); showMsg(msgId,`✓ 已匯入 ${details.length} 筆並自動配對利息`,true); }
+    else { showMsg(msgId,`✓ 已匯入 ${details.length} 筆投資明細`,true); }
+  } else {
+    holdings=parseHoldings(rows);
+    if(!holdDate){ const t=new Date(); holdDate=`${t.getFullYear()}/${String(t.getMonth()+1).padStart(2,'0')}/${String(t.getDate()).padStart(2,'0')}`; }
+    showMsg(msgId,`✓ 已匯入 ${holdings.length} 支持股`,true);
+  }
+  save(); refreshAll();
+}
+
+// Quick load (topbar)
+function quickLoad(type,file){
+  if(!file) return;
+  document.getElementById({realized:'qRFile',detail:'qDFile',holdings:'qHFile'}[type]).value='';
+  handleFile(type,file);
+  // auto import after brief delay
+  setTimeout(()=>doImport(type),800);
+}
+
+// ══ HOLD DATE ══
+function onHoldDateChange(){
+  holdDate=document.getElementById('holdDate').value;
+  save(); renderHoldings();
+}
+
+// ══ METRICS ══
+function renderMetrics(){
+  const sells=realized;
+  const totalPnl=sells.reduce((s,r)=>s+finalPnl(r),0);
+  const totalInterest=sells.reduce((s,r)=>s+(r.interest||0),0);
+  const totalAdj2=extAdjTotal()+sells.reduce((s,r)=>s+adjDiff(r),0);
+  const totalCost=sells.reduce((s,r)=>s+(r.cost||0),0);
+  const wins=sells.filter(r=>finalPnl(r)>0).length;
+  const wr=sells.length?wins/sells.length*100:0;
+  const ret=totalCost>0?totalPnl/totalCost*100:0;
+  const netRet=totalCost>0?(totalPnl-totalInterest)/totalCost*100:0;
+  const maxW=sells.length?Math.max(...sells.map(r=>finalPnl(r))):0;
+  const maxL=sells.length?Math.min(...sells.map(r=>finalPnl(r))):0;
+  const hPnl=holdings.reduce((s,h)=>s+h.pnl,0);
+  const hMkt=holdings.reduce((s,h)=>s+h.mktVal,0);
+  const net=totalPnl-totalInterest+totalAdj2;
+
+  document.getElementById('metricsGrid').innerHTML=`
+    <div class="mc ${cc(totalPnl)==='pos'?'cg':'cr'}"><div class="ml">已實現損益</div><div class="mv ${cc(totalPnl)}">${totalPnl>=0?'+':''}${fmt(totalPnl)}</div><div class="ms">${sells.length}筆 · 勝率${wr.toFixed(0)}%</div></div>
+    <div class="mc ${cc(netRet)==='pos'?'cg':'cr'}"><div class="ml">淨報酬率（扣利息）</div><div class="mv ${cc(netRet)}">${fmtP(netRet)}</div><div class="ms">報酬率 ${fmtP(ret)}</div></div>
+    <div class="mc ca"><div class="ml">未實現損益</div><div class="mv ${cc(hPnl)}">${hPnl>=0?'+':''}${fmt(hPnl)}</div><div class="ms">市值 ${fmt(hMkt)}</div></div>
+    <div class="mc cam"><div class="ml">融資利息合計</div><div class="mv neg">-${fmt(totalInterest)}</div><div class="ms">已實現部位</div></div>
+    <div class="mc cp"><div class="ml">調整合計</div><div class="mv ${cc(totalAdj2)}">${totalAdj2>=0?'+':''}${fmt(totalAdj2)}</div></div>
+    <div class="mc ${cc(net)==='pos'?'cg':'cr'}"><div class="ml">淨收益（損益−利息+調整）</div><div class="mv ${cc(net)}">${net>=0?'+':''}${fmt(net)}</div></div>
+    <div class="mc cg"><div class="ml">最大單筆獲利</div><div class="mv pos">+${fmt(maxW)}</div></div>
+    <div class="mc cr"><div class="ml">最大單筆虧損</div><div class="mv neg">${fmt(maxL)}</div></div>`;
+}
+
+// ══ CHARTS ══
+function dc(k){if(charts[k]){charts[k].destroy();charts[k]=null;}}
+function renderChartMonthly(){
+  dc('m');
+  const m={};
+  realized.forEach(r=>{const k=gm(r.sellDate);if(!m[k])m[k]={p:0,i:0};m[k].p+=finalPnl(r);m[k].i+=r.interest||0;});
+  const labels=Object.keys(m).sort(),ps=labels.map(l=>m[l].p),is2=labels.map(l=>-m[l].i);
+  charts.m=new Chart(document.getElementById('chartMonthly').getContext('2d'),{
+    type:'bar',data:{labels,datasets:[
+      {data:ps,backgroundColor:ps.map(v=>v>=0?'rgba(12,166,120,.7)':'rgba(224,49,49,.7)'),borderRadius:4,order:2},
+      {data:is2,backgroundColor:'rgba(230,119,0,.5)',borderRadius:4,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{callback:v=>(v>=0?'+':'')+(v/10000).toFixed(0)+'萬',color:'#9ca3bf',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},
+              x:{ticks:{color:'#9ca3bf',font:{size:10},maxRotation:45,autoSkip:false},grid:{display:false}}}}});
+}
+function renderChartType(){
   dc('t');
-  const tc={}, tp={};
-  getSellList().forEach(d => { tc[d.tradeType]=(tc[d.tradeType]||0)+1; tp[d.tradeType]=(tp[d.tradeType]||0)+finalPnl(d); });
-  const labels = Object.keys(tc), pal = ['#3b5bdb','#0ca678','#e67700','#6741d9','#0891b2','#e03131'];
-  charts.t = new Chart(document.getElementById('chartType').getContext('2d'), {
-    type:'doughnut', data:{labels, datasets:[{data:labels.map(l=>tc[l]), backgroundColor:pal.slice(0,labels.length), borderWidth:2, borderColor:'#fff', hoverOffset:4}]},
-    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, cutout:'62%'}});
-  document.getElementById('typeStats').innerHTML = labels.map((l,i) =>
+  const tc={},tp={};
+  realized.forEach(r=>{tc[r.tradeType]=(tc[r.tradeType]||0)+1;tp[r.tradeType]=(tp[r.tradeType]||0)+finalPnl(r);});
+  const labels=Object.keys(tc),pal=['#3b5bdb','#0ca678','#e67700','#6741d9','#0891b2','#e03131'];
+  charts.t=new Chart(document.getElementById('chartType').getContext('2d'),{
+    type:'doughnut',data:{labels,datasets:[{data:labels.map(l=>tc[l]),backgroundColor:pal.slice(0,labels.length),borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'62%'}});
+  document.getElementById('typeStats').innerHTML=labels.map((l,i)=>
     `<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px">
-      <span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:${pal[i]};display:inline-block"></span><span class="badge b-${l}">${l}</span><span style="color:var(--text3)">${tc[l]}筆</span></span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:${pal[i]};display:inline-block"></span><span class="badge b-${l}">${l}</span><span style="color:var(--text3)">${tc[l]}筆</span></span>
       <span class="${cc(tp[l])}" style="font-family:var(--mono);font-weight:600">${tp[l]>=0?'+':''}${fmt(tp[l])}</span>
     </div>`).join('');
 }
-
-function renderChartDist() {
+function renderChartDist(){
   dc('d');
-  const bins = [[-1e9,-100000],[-100000,-50000],[-50000,-20000],[-20000,-5000],[-5000,0],[0,5000],[5000,20000],[20000,50000],[50000,100000],[100000,1e9]];
-  const labels = ['<-10W','-10~-5W','-5~-2W','-2W~-5K','-5K~0','0~5K','5K~2W','2~5W','5~10W','>10W'];
-  const vals = getSellList().map(d => finalPnl(d));
-  charts.d = new Chart(document.getElementById('chartDist').getContext('2d'), {
-    type:'bar', data:{labels, datasets:[{data:bins.map(([a,b])=>vals.filter(v=>v>=a&&v<b).length), backgroundColor:bins.map(([a])=>a>=0?'rgba(12,166,120,.7)':'rgba(224,49,49,.7)'), borderRadius:4}]},
-    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-      scales:{y:{ticks:{color:'#9ca3bf',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}}, x:{ticks:{color:'#9ca3bf',font:{size:9},maxRotation:35},grid:{display:false}}}}});
+  const bins=[[-1e9,-100000],[-100000,-50000],[-50000,-20000],[-20000,-5000],[-5000,0],[0,5000],[5000,20000],[20000,50000],[50000,100000],[100000,1e9]];
+  const labels=['<-10W','-10~-5W','-5~-2W','-2W~-5K','-5K~0','0~5K','5K~2W','2~5W','5~10W','>10W'];
+  const vals=realized.map(r=>finalPnl(r));
+  charts.d=new Chart(document.getElementById('chartDist').getContext('2d'),{
+    type:'bar',data:{labels,datasets:[{data:bins.map(([a,b])=>vals.filter(v=>v>=a&&v<b).length),backgroundColor:bins.map(([a])=>a>=0?'rgba(12,166,120,.7)':'rgba(224,49,49,.7)'),borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{color:'#9ca3bf',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},x:{ticks:{color:'#9ca3bf',font:{size:9},maxRotation:35},grid:{display:false}}}}});
 }
-
-function renderChartHold() {
+function renderChartHold(){
   dc('h');
-  const top = [...holdings].sort((a,b)=>b.mktVal-a.mktVal).slice(0,10);
-  charts.h = new Chart(document.getElementById('chartHold').getContext('2d'), {
-    type:'bar', data:{labels:top.map(h=>h.name||h.code), datasets:[{data:top.map(h=>h.pnl), backgroundColor:top.map(h=>h.pnl>=0?'rgba(12,166,120,.65)':'rgba(224,49,49,.65)'), borderRadius:4}]},
-    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-      scales:{x:{ticks:{callback:v=>fmt(v),color:'#9ca3bf',font:{size:9}},grid:{color:'rgba(0,0,0,.04)'}}, y:{ticks:{color:'#9ca3bf',font:{size:10}},grid:{display:false}}}}});
+  const top=[...holdings].sort((a,b)=>b.mktVal-a.mktVal).slice(0,10);
+  charts.h=new Chart(document.getElementById('chartHold').getContext('2d'),{
+    type:'bar',data:{labels:top.map(h=>h.name||h.code),datasets:[{data:top.map(h=>h.pnl),backgroundColor:top.map(h=>h.pnl>=0?'rgba(12,166,120,.65)':'rgba(224,49,49,.65)'),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{callback:v=>fmt(v),color:'#9ca3bf',font:{size:9}},grid:{color:'rgba(0,0,0,.04)'}},y:{ticks:{color:'#9ca3bf',font:{size:10}},grid:{display:false}}}}});
 }
 
-// ══════════════════════════════════════════
-//  REALIZED
-// ══════════════════════════════════════════
-function populateRealizedFilters() {
-  const sells = getSellList();
-  const stocks = [...new Map(sells.map(d=>[d.code,{code:d.code,name:d.name}])).values()];
-  const types = [...new Set(sells.map(d=>d.tradeType))].filter(Boolean);
-  const months = [...new Set(sells.map(d=>gm(d.date)))].sort();
-  document.getElementById('rStock').innerHTML = '<option value="">全部股票</option>'+stocks.map(s=>`<option value="${s.code}">${s.code} ${s.name}</option>`).join('');
-  document.getElementById('rType').innerHTML = '<option value="">全部類別</option>'+types.map(t=>`<option value="${t}">${t}</option>`).join('');
-  document.getElementById('rMonth').innerHTML = '<option value="">全部月份</option>'+months.map(m=>`<option value="${m}">${m}</option>`).join('');
+// ══ REALIZED ══
+function populateRFilters(){
+  const stocks=[...new Map(realized.map(r=>[r.code,{code:r.code,name:r.name}])).values()];
+  const types=[...new Set(realized.map(r=>r.tradeType))].filter(Boolean);
+  const months=[...new Set(realized.map(r=>gm(r.sellDate)))].sort();
+  document.getElementById('rStock').innerHTML='<option value="">全部股票</option>'+stocks.map(s=>`<option value="${s.code}">${s.code} ${s.name}</option>`).join('');
+  document.getElementById('rType').innerHTML='<option value="">全部類別</option>'+types.map(t=>`<option value="${t}">${t}</option>`).join('');
+  document.getElementById('rMonth').innerHTML='<option value="">全部月份</option>'+months.map(m=>`<option value="${m}">${m}</option>`).join('');
 }
 
-function renderRealized() {
-  let arr = getSellList();
-  const fS=document.getElementById('rStock').value, fT=document.getElementById('rType').value;
-  const fM=document.getElementById('rMonth').value, fP=document.getElementById('rPnl').value;
+function renderRealized(){
+  let arr=[...realized];
+  const fS=document.getElementById('rStock').value,fT=document.getElementById('rType').value;
+  const fM=document.getElementById('rMonth').value,fP=document.getElementById('rPnl').value;
+  const fMatch=document.getElementById('rMatch').value;
   const q=(document.getElementById('rSearch').value||'').toLowerCase();
-  if(fS) arr=arr.filter(d=>d.code===fS);
-  if(fT) arr=arr.filter(d=>d.tradeType===fT);
-  if(fM) arr=arr.filter(d=>gm(d.date)===fM);
-  if(fP==='win') arr=arr.filter(d=>finalPnl(d)>0);
-  if(fP==='loss') arr=arr.filter(d=>finalPnl(d)<0);
-  if(fP==='adj') arr=arr.filter(d=>d.adjPnl!==null&&d.adjPnl!==undefined);
-  if(q) arr=arr.filter(d=>d.code.includes(q)||d.name.toLowerCase().includes(q));
-  document.getElementById('rCount').textContent = `共 ${arr.length} 筆`;
+  if(fS)arr=arr.filter(r=>r.code===fS);
+  if(fT)arr=arr.filter(r=>r.tradeType===fT);
+  if(fM)arr=arr.filter(r=>gm(r.sellDate)===fM);
+  if(fP==='win')arr=arr.filter(r=>finalPnl(r)>0);
+  if(fP==='loss')arr=arr.filter(r=>finalPnl(r)<0);
+  if(fP==='adj')arr=arr.filter(r=>r.adjPnl!==null&&r.adjPnl!==undefined);
+  if(fMatch==='matched')arr=arr.filter(r=>r.matched);
+  if(fMatch==='unmatched')arr=arr.filter(r=>!r.matched);
+  if(q)arr=arr.filter(r=>r.code.includes(q)||r.name.toLowerCase().includes(q));
+  document.getElementById('rCount').textContent=`${arr.length} 筆`;
 
-  document.getElementById('realizedBody').innerHTML = arr.map(d => {
-    const fp = finalPnl(d);
-    const diff = getTradeAdj(d);
-    const isAdj = d.adjPnl !== null && d.adjPnl !== undefined;
-    const cost = d.buyCost || 0;
-    const ret = cost > 0 ? fp/cost*100 : 0;
-    return `<tr style="background:${isAdj?'rgba(103,65,217,.02)':''}">
-      <td class="mono" style="font-weight:600">${d.code}</td>
-      <td style="font-weight:500">${d.name}</td>
-      <td class="mono">${d.date}</td>
-      <td><span class="badge b-${d.tradeType}">${d.tradeType}</span></td>
-      <td class="r mono">${fmtD(d.price)}</td>
-      <td class="r mono">${cost>0?fmt(cost):'-'}</td>
-      <td class="r mono">${fmt(d.qty)}</td>
-      <td class="r mono">${fmt(d.fee)}</td>
-      <td class="r mono">${fmt(d.tax)}</td>
-      <td class="r mono ${(d.interest||0)>0?'neg':''}">${d.interest>0?'-'+fmt(d.interest):'-'}</td>
-      <td class="r mono ${cc(d.pnl)}">${d.pnl>=0?'+':''}${fmt(d.pnl)}</td>
+  const matchedTotal=realized.filter(r=>r.matched).length;
+  const totalInterestAll=realized.reduce((s,r)=>s+(r.interest||0),0);
+  document.getElementById('matchInfo').innerHTML=`
+    已配對：<b>${matchedTotal}</b>／${realized.length} 筆｜融資利息合計：<b>-${fmt(totalInterestAll)}</b>｜
+    未配對 <b>${realized.length-matchedTotal}</b> 筆（現股/現沖無利息屬正常）`;
+
+  document.getElementById('realizedBody').innerHTML=arr.map(r=>{
+    const fp=finalPnl(r),diff=adjDiff(r);
+    const isAdj=r.adjPnl!==null&&r.adjPnl!==undefined;
+    const netRet=r.cost>0?(fp-r.interest)/r.cost*100:0;
+    const matchBadge=r.matched?'<span class="badge b-已配對">已配對</span>':r.interest>0?'<span class="badge b-手動">手動</span>':'<span class="badge b-未配對">—</span>';
+    return `<tr class="${r.matched?'matched-row':''}" style="${isAdj?'background:rgba(103,65,217,.03)':''}">
+      <td class="mono" style="font-weight:600">${r.code}</td>
+      <td style="font-weight:500">${r.name}</td>
+      <td class="mono">${r.sellDate}</td>
+      <td><span class="badge b-${r.tradeType}">${r.tradeType}</span></td>
+      <td class="r mono">${fmtD(r.sellPrice)}</td>
+      <td class="r mono">${r.cost>0?fmt(r.cost):'-'}</td>
+      <td class="r mono">${fmt(r.qty)}</td>
+      <td class="r mono">${fmt(r.fee)}</td>
+      <td class="r mono">${fmt(r.tax)}</td>
+      <td class="r mono ${r.interest>0?'neg':'text3'}" style="font-weight:${r.interest?'600':'400'}">${r.interest>0?'-'+fmt(r.interest):'-'}</td>
+      <td class="r mono ${cc(r.pnl)}">${r.pnl>=0?'+':''}${fmt(r.pnl)}</td>
       <td class="r mono ${isAdj?cc(diff):''}">${isAdj?(diff>=0?'+':'')+fmt(diff):'—'}</td>
       <td class="r mono ${cc(fp)}" style="font-weight:700">${fp>=0?'+':''}${fmt(fp)}</td>
-      <td class="r mono ${cc(ret)}">${fmtP(ret)}</td>
-      <td style="font-size:11px;color:var(--text3);max-width:120px;overflow:hidden;text-overflow:ellipsis">${d.adjNote||''}</td>
-      <td style="text-align:center"><button class="btn btn-sm ${isAdj?'btn-accent':''}" onclick="openAdjModal('${d.id}')">${isAdj?'已調整':'調整'}</button></td>
+      <td class="r mono ${cc(netRet)}">${fmtP(netRet)}</td>
+      <td>${matchBadge}</td>
+      <td style="text-align:center">
+        <button class="btn btn-sm ${isAdj?'btn-accent':''}" onclick="openAdjModal('${r.id}')" style="margin-right:3px">${isAdj?'已調整':'調整'}</button>
+        <button class="btn btn-sm" onclick="openInterestModal('${r.id}')" style="color:var(--amber);border-color:var(--amber)" title="修改融資利息">利息</button>
+      </td>
     </tr>`;
   }).join('');
 
-  const sp = arr.reduce((s,d)=>s+finalPnl(d),0);
-  const si = arr.reduce((s,d)=>s+(d.interest||0),0);
-  const sd = arr.reduce((s,d)=>s+getTradeAdj(d),0);
-  document.getElementById('realizedSum').innerHTML = `
-    <span>最終損益：<strong class="${cc(sp)} mono">${sp>=0?'+':''}${fmt(sp)}</strong></span>
+  const sp=arr.reduce((s,r)=>s+finalPnl(r),0);
+  const si=arr.reduce((s,r)=>s+(r.interest||0),0);
+  const sd=arr.reduce((s,r)=>s+adjDiff(r),0);
+  document.getElementById('realizedSum').innerHTML=`
+    <span>篩選損益：<strong class="${cc(sp)} mono">${sp>=0?'+':''}${fmt(sp)}</strong></span>
     <span>融資利息：<strong class="neg mono">-${fmt(si)}</strong></span>
-    <span>調整小計：<strong class="${cc(sd)} mono">${sd!==0?(sd>=0?'+':'')+fmt(sd):'無'}</strong></span>
+    <span>調整小計：<strong class="${cc(sd)} mono">${sd?((sd>=0?'+':'')+fmt(sd)):'無'}</strong></span>
     <span>淨收益：<strong class="${cc(sp-si+sd)} mono">${(sp-si+sd)>=0?'+':''}${fmt(sp-si+sd)}</strong></span>`;
 }
 
-// ══════════════════════════════════════════
-//  ADJUST MODAL
-// ══════════════════════════════════════════
-function openAdjModal(id) {
-  const d = details.find(x => String(x.id)===String(id));
-  if(!d) return;
-  _modalCode = id;
-  const fp = finalPnl(d);
-  const diff = getTradeAdj(d);
-
-  document.getElementById('adjModalContent').innerHTML = `
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:16px;font-size:13px">
-      <strong>${d.name}(${d.code})</strong> · ${d.date} · ${d.tradeType}<br>
+// ══ MODALS ══
+function openAdjModal(id){
+  const r=realized.find(x=>String(x.id)===String(id));if(!r)return;
+  _modalId=id;
+  document.getElementById('adjModalTitle').innerHTML=`調整損益 <button class="modal-close" onclick="closeModal()">×</button>`;
+  document.getElementById('adjModalContent').innerHTML=`
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:14px;font-size:13px">
+      <strong>${r.name}(${r.code})</strong> · ${r.sellDate} · ${r.tradeType}<br>
       <div style="display:flex;gap:16px;margin-top:6px;flex-wrap:wrap">
-        <span>原始損益：<span class="${cc(d.pnl)} mono" style="font-weight:700">${d.pnl>=0?'+':''}${fmt(d.pnl)}</span></span>
-        <span>融資利息：<span class="neg mono">-${fmt(d.interest||0)}</span></span>
-        ${d.adjPnl!==null&&d.adjPnl!==undefined?`<span>目前調整後：<span class="${cc(fp)} mono" style="font-weight:700">${fp>=0?'+':''}${fmt(fp)}</span></span>`:''}
+        <span>原始損益：<span class="${cc(r.pnl)} mono" style="font-weight:700">${r.pnl>=0?'+':''}${fmt(r.pnl)}</span></span>
+        ${r.interest>0?`<span>融資利息：<span class="neg mono">-${fmt(r.interest)}</span></span>`:''}
+        ${r.adjPnl!==null&&r.adjPnl!==undefined?`<span>目前調整後：<span class="${cc(r.adjPnl)} mono" style="font-weight:700">${r.adjPnl>=0?'+':''}${fmt(r.adjPnl)}</span></span>`:''}
       </div>
     </div>
-
-    <div style="background:var(--accent-dim);border:1px solid rgba(59,91,219,.15);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--accent);line-height:1.8">
-      <strong>計算方式：</strong> 最終損益 = 盈虧修正值 − 額外扣除費用<br>
-      兩欄可同時填，也可只填一個。都留空 = 清除調整。
+    <div style="background:var(--adim);border:1px solid rgba(59,91,219,.15);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--accent);line-height:1.8">
+      最終損益 = 盈虧修正值 − 額外扣除費用。兩欄可同時填，都留空 = 清除調整。
     </div>
-
     <div class="fr" style="margin-bottom:12px">
       <div class="fg" style="margin-bottom:0">
         <label style="color:var(--accent);font-weight:700">盈虧修正值</label>
-        <input type="number" id="mAdjPnl" value="${d.adjBaseVal!==undefined?d.adjBaseVal:''}" placeholder="留空=使用原始 ${d.pnl}" oninput="updateAdjPreview()">
-        <div style="font-size:11px;color:var(--text3);margin-top:3px">直接填入正確的盈虧金額</div>
+        <input type="number" id="mAdjPnl" value="${r.adjBaseVal!==undefined?r.adjBaseVal:''}" placeholder="${r.pnl}" oninput="updateAdjPreview()">
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">輸入正確的盈虧金額</div>
       </div>
       <div class="fg" style="margin-bottom:0">
         <label style="color:var(--red);font-weight:700">額外扣除費用（正數）</label>
-        <input type="number" id="mExtraFee" value="${d.adjExtraFee||''}" placeholder="留空=不扣除" oninput="updateAdjPreview()">
+        <input type="number" id="mExtraFee" value="${r.adjExtraFee||''}" placeholder="留空=不扣除" oninput="updateAdjPreview()">
         <div style="font-size:11px;color:var(--text3);margin-top:3px">未賣出回補手續費等</div>
       </div>
     </div>
-
     <div class="fg" style="margin-bottom:12px">
       <label>調整原因</label>
-      <select id="mReason" style="width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);border-radius:var(--r-sm);padding:7px 10px;font-size:13px;font-family:inherit;outline:none">
-        <option value="fee_rebuy">未賣出回補資金</option>
-        <option value="margin_transfer">融資轉現股</option>
-        <option value="margin_call">融資追繳</option>
-        <option value="pnl_fix">損益修正</option>
-        <option value="other">其他</option>
+      <select id="mReason" style="width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);padding:7px 10px;font-size:13px;font-family:inherit;outline:none">
+        <option value="fee_rebuy">未賣出回補資金</option><option value="margin_transfer">融資轉現股</option>
+        <option value="margin_call">融資追繳</option><option value="pnl_fix">損益修正</option><option value="other">其他</option>
       </select>
     </div>
-
     <div class="fg" style="margin-bottom:14px">
-      <label>備註說明</label>
-      <input type="text" id="mNote" value="${d.adjNote||''}" placeholder="例：未賣出回補手續費 104,623">
+      <label>備註</label><input type="text" id="mNote" value="${r.adjNote||''}" placeholder="例：未賣出回補手續費 104,623">
     </div>
-
-    <div id="adjPreview" style="padding:10px 12px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg);font-size:13px;margin-bottom:14px;min-height:40px"></div>
-
+    <div id="adjPreview" style="padding:10px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg);font-size:13px;margin-bottom:14px;min-height:38px"></div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-green" style="flex:1" onclick="saveAdjModal('${d.id}')">儲存調整</button>
-      <button class="btn btn-danger" onclick="clearAdjModal('${d.id}')">清除調整</button>
-      <button class="btn" onclick="closeAdjModal()">取消</button>
+      <button class="btn btn-green" style="flex:1" onclick="saveAdjModal()">儲存</button>
+      <button class="btn btn-danger" onclick="clearAdjModal()">清除調整</button>
+      <button class="btn" onclick="closeModal()">取消</button>
     </div>`;
-
   document.getElementById('adjModal').classList.add('open');
   updateAdjPreview();
 }
 
-function updateAdjPreview() {
-  const d = details.find(x => String(x.id)===String(_modalCode));
-  if(!d) return;
-  const adjVal = document.getElementById('mAdjPnl')?.value;
-  const fee = parseFloat(document.getElementById('mExtraFee')?.value||'') || 0;
-  const base = adjVal!==undefined && adjVal!=='' ? parseFloat(adjVal) : d.pnl;
-  const final_ = base - fee;
-  const parts = [];
-  if(adjVal!==undefined && adjVal!=='') parts.push(`修正值 <span class="${cc(parseFloat(adjVal))} mono" style="font-weight:700">${parseFloat(adjVal)>=0?'+':''}${fmt(parseFloat(adjVal))}</span>`);
-  else parts.push(`原始 <span class="${cc(d.pnl)} mono">${d.pnl>=0?'+':''}${fmt(d.pnl)}</span>`);
-  if(fee>0) parts.push(`手續費 <span class="neg mono">−${fmt(fee)}</span>`);
-  const prev = document.getElementById('adjPreview');
-  if(prev) prev.innerHTML = parts.join(' → ') + `　＝　<strong class="${cc(final_)} mono" style="font-size:15px">${final_>=0?'+':''}${fmt(final_)}</strong>`;
+function openInterestModal(id){
+  const r=realized.find(x=>String(x.id)===String(id));if(!r)return;
+  _modalId=id;
+  document.getElementById('adjModalTitle').innerHTML=`修改融資利息 <button class="modal-close" onclick="closeModal()">×</button>`;
+  document.getElementById('adjModalContent').innerHTML=`
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:14px;font-size:13px">
+      <strong>${r.name}(${r.code})</strong> · ${r.sellDate} · ${r.tradeType}<br>
+      配對狀態：${r.matched?'<span style="color:var(--green)">✓ 已從投資明細配對</span>':'<span style="color:var(--text3)">未配對</span>'}
+      ${r.interestManual?'<span style="color:var(--purple);margin-left:8px">（已手動設定）</span>':''}
+    </div>
+    <div class="fg">
+      <label style="color:var(--amber);font-weight:700">融資利息（元）</label>
+      <input type="number" id="mInterest" value="${r.interest||0}" placeholder="0">
+      <div style="font-size:11px;color:var(--text3);margin-top:3px">修改後不會再被自動配對覆蓋</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-amber" style="flex:1" onclick="saveInterestModal()">儲存利息</button>
+      <button class="btn" onclick="resetInterestModal()">還原自動配對</button>
+      <button class="btn" onclick="closeModal()">取消</button>
+    </div>`;
+  document.getElementById('adjModal').classList.add('open');
 }
 
-function saveAdjModal(id) {
-  const d = details.find(x => String(x.id)===String(id));
-  if(!d) return;
-  const adjVal = document.getElementById('mAdjPnl').value;
-  const fee = parseFloat(document.getElementById('mExtraFee').value||'') || 0;
-  const note = document.getElementById('mNote').value;
-  if(adjVal==='' && fee===0) { d.adjPnl=null; d.adjBaseVal=undefined; d.adjExtraFee=0; }
-  else {
-    const base = adjVal!=='' ? parseFloat(adjVal) : d.pnl;
-    d.adjBaseVal = adjVal!=='' ? parseFloat(adjVal) : undefined;
-    d.adjExtraFee = fee;
-    d.adjPnl = base - fee;
-  }
-  d.adjNote = note;
-  save(); closeAdjModal(); refreshAll();
-}
-function clearAdjModal(id) {
-  const d = details.find(x => String(x.id)===String(id));
-  if(d) { d.adjPnl=null; d.adjBaseVal=undefined; d.adjExtraFee=0; d.adjNote=''; }
-  save(); closeAdjModal(); refreshAll();
-}
-function closeAdjModal() { document.getElementById('adjModal').classList.remove('open'); _modalCode=null; }
-
-// ══════════════════════════════════════════
-//  HOLDINGS
-// ══════════════════════════════════════════
-function saveHoldDate() {
-  holdDate = document.getElementById('holdDate').value;
-  const lbl = document.getElementById('holdDateLabel');
-  lbl.textContent = holdDate ? `（${holdDate} 抓取）` : '';
-  save(); renderHoldings();
+function updateAdjPreview(){
+  const r=realized.find(x=>String(x.id)===String(_modalId));if(!r) return;
+  const adjVal=document.getElementById('mAdjPnl')?.value;
+  const fee=parseFloat(document.getElementById('mExtraFee')?.value||'')||0;
+  const base=adjVal&&adjVal!==''?parseFloat(adjVal):r.pnl;
+  const final_=base-fee;
+  const prev=document.getElementById('adjPreview');if(!prev)return;
+  const parts=[];
+  if(adjVal&&adjVal!=='') parts.push(`修正值 <span class="${cc(parseFloat(adjVal))} mono" style="font-weight:700">${parseFloat(adjVal)>=0?'+':''}${fmt(parseFloat(adjVal))}</span>`);
+  else parts.push(`原始 <span class="${cc(r.pnl)} mono">${r.pnl>=0?'+':''}${fmt(r.pnl)}</span>`);
+  if(fee>0) parts.push(`費用 <span class="neg mono">−${fmt(fee)}</span>`);
+  prev.innerHTML=parts.join(' → ')+`　＝　<strong class="${cc(final_)} mono" style="font-size:15px">${final_>=0?'+':''}${fmt(final_)}</strong>`;
 }
 
-function renderHoldings() {
-  const tMkt=holdings.reduce((s,h)=>s+h.mktVal,0), tCost=holdings.reduce((s,h)=>s+h.costAmt,0);
-  const tPnl=holdings.reduce((s,h)=>s+h.pnl,0), tInt=holdings.reduce((s,h)=>s+(h.interest||0),0);
+function saveAdjModal(){
+  const r=realized.find(x=>String(x.id)===String(_modalId));if(!r)return;
+  const adjVal=document.getElementById('mAdjPnl').value;
+  const fee=parseFloat(document.getElementById('mExtraFee').value||'')||0;
+  const note=document.getElementById('mNote').value;
+  if(adjVal===''&&fee===0){r.adjPnl=null;r.adjBaseVal=undefined;r.adjExtraFee=0;}
+  else{const base=adjVal!==''?parseFloat(adjVal):r.pnl;r.adjBaseVal=adjVal!==''?parseFloat(adjVal):undefined;r.adjExtraFee=fee;r.adjPnl=base-fee;}
+  r.adjNote=note;save();closeModal();refreshAll();
+}
+function clearAdjModal(){
+  const r=realized.find(x=>String(x.id)===String(_modalId));
+  if(r){r.adjPnl=null;r.adjBaseVal=undefined;r.adjExtraFee=0;r.adjNote='';}
+  save();closeModal();refreshAll();
+}
+function saveInterestModal(){
+  const r=realized.find(x=>String(x.id)===String(_modalId));if(!r)return;
+  r.interest=parseFloat(document.getElementById('mInterest').value)||0;
+  r.interestManual=true;save();closeModal();refreshAll();
+}
+function resetInterestModal(){
+  const r=realized.find(x=>String(x.id)===String(_modalId));
+  if(r){r.interestManual=false;}
+  save();closeModal();runMatch();
+}
+function closeModal(){document.getElementById('adjModal').classList.remove('open');_modalId=null;}
+
+// ══ HOLDINGS ══
+function renderHoldings(){
+  const tMkt=holdings.reduce((s,h)=>s+h.mktVal,0),tCost=holdings.reduce((s,h)=>s+h.costAmt,0);
+  const tPnl=holdings.reduce((s,h)=>s+h.pnl,0),tInt=holdings.reduce((s,h)=>s+(h.interest||0),0);
   const tRet=tCost>0?tPnl/tCost*100:0;
-  document.getElementById('holdSummary').innerHTML = `
-    <div class="hs"><div class="hl">持倉市值${holdDate?` <span style="font-size:10px;color:var(--accent)">${holdDate}</span>`:''}</div><div class="hv mono">${fmt(tMkt)}</div></div>
+  const hd=document.getElementById('holdDate').value||holdDate;
+  document.getElementById('holdSummary').innerHTML=`
+    <div class="hs"><div class="hl">持倉市值${hd?` <span style="font-size:10px;color:var(--accent)">${hd}</span>`:''}</div><div class="hv mono">${fmt(tMkt)}</div></div>
     <div class="hs"><div class="hl">持倉成本</div><div class="hv mono">${fmt(tCost)}</div></div>
     <div class="hs"><div class="hl">未實現損益</div><div class="hv ${cc(tPnl)} mono">${tPnl>=0?'+':''}${fmt(tPnl)}</div></div>
     <div class="hs"><div class="hl">整體報酬率</div><div class="hv ${cc(tRet)}">${fmtP(tRet)}</div></div>
     <div class="hs"><div class="hl">持股數</div><div class="hv">${holdings.length} 支</div></div>
     <div class="hs"><div class="hl">累計利息</div><div class="hv ${tInt>0?'neg':''} mono">${tInt>0?'-'+fmt(tInt):'-'}</div></div>`;
-
-  let arr = [...holdings];
-  const q=(document.getElementById('holdSearch').value||'').toLowerCase(), sort=document.getElementById('holdSort').value;
+  let arr=[...holdings];
+  const q=(document.getElementById('holdSearch').value||'').toLowerCase(),sort=document.getElementById('holdSort').value;
   if(q) arr=arr.filter(h=>h.code.toLowerCase().includes(q)||h.name.includes(q));
-  if(sort==='pnl_d') arr.sort((a,b)=>b.pnl-a.pnl);
-  else if(sort==='pnl_a') arr.sort((a,b)=>a.pnl-b.pnl);
-  else if(sort==='ret_d') arr.sort((a,b)=>b.ret-a.ret);
-  else arr.sort((a,b)=>b.mktVal-a.mktVal);
-  document.getElementById('holdCount').textContent = `${arr.length}/${holdings.length} 支`;
-
-  document.getElementById('holdBody').innerHTML = arr.map(h => `
+  if(sort==='pnl_d')arr.sort((a,b)=>b.pnl-a.pnl);else if(sort==='pnl_a')arr.sort((a,b)=>a.pnl-b.pnl);
+  else if(sort==='ret_d')arr.sort((a,b)=>b.ret-a.ret);else arr.sort((a,b)=>b.mktVal-a.mktVal);
+  document.getElementById('holdCount').textContent=`${arr.length}/${holdings.length} 支`;
+  document.getElementById('holdBody').innerHTML=arr.map(h=>`
     <tr style="background:${h.pnl>0?'rgba(12,166,120,.025)':h.pnl<0?'rgba(224,49,49,.025)':''}">
-      <td class="mono" style="font-weight:600">${h.code}</td>
-      <td style="font-weight:500">${h.name}</td>
+      <td class="mono" style="font-weight:600">${h.code}</td><td style="font-weight:500">${h.name}</td>
       <td><span class="badge b-${h.tradeType}">${h.tradeType}</span></td>
-      <td class="r mono">${h.qty.toLocaleString()}</td>
-      <td class="r mono">${fmtD(h.price)}</td>
-      <td class="r mono">${fmt(h.mktVal)}</td>
-      <td class="r mono">${fmt(h.costAmt)}</td>
-      <td class="r mono">${fmtD(h.avgPrice)}</td>
-      <td class="r mono">${fmt(h.fee||0)}</td>
+      <td class="r mono">${h.qty.toLocaleString()}</td><td class="r mono">${fmtD(h.price)}</td>
+      <td class="r mono">${fmt(h.mktVal)}</td><td class="r mono">${fmt(h.costAmt)}</td>
+      <td class="r mono">${fmtD(h.avgPrice)}</td><td class="r mono">${fmt(h.fee||0)}</td>
       <td class="r mono ${(h.interest||0)>0?'neg':''}">${h.interest>0?'-'+fmt(h.interest):'-'}</td>
       <td class="r mono ${cc(h.pnl)}" style="font-weight:700">${h.pnl>=0?'+':''}${fmt(h.pnl)}</td>
       <td class="r mono ${cc(h.ret)}">${fmtP(h.ret)}</td>
     </tr>`).join('');
-
-  const fp=arr.reduce((s,h)=>s+h.pnl,0), fm=arr.reduce((s,h)=>s+h.mktVal,0);
-  document.getElementById('holdSumRow').innerHTML = `
-    <span>篩選市值：<strong class="mono">${fmt(fm)}</strong></span>
-    <span>篩選損益：<strong class="${cc(fp)} mono">${fp>=0?'+':''}${fmt(fp)}</strong></span>`;
+  const fp=arr.reduce((s,h)=>s+h.pnl,0),fm=arr.reduce((s,h)=>s+h.mktVal,0);
+  document.getElementById('holdSumRow').innerHTML=`<span>篩選市值：<strong class="mono">${fmt(fm)}</strong></span><span>篩選損益：<strong class="${cc(fp)} mono">${fp>=0?'+':''}${fmt(fp)}</strong></span>`;
 }
 
-// ══════════════════════════════════════════
-//  DETAIL (all transactions)
-// ══════════════════════════════════════════
-function populateDetailFilters() {
-  const stocks = [...new Map(details.map(d=>[d.code,{code:d.code,name:d.name}])).values()];
-  const types = [...new Set(details.map(d=>d.tradeType))].filter(Boolean);
-  const months = [...new Set(details.map(d=>gm(d.date)))].sort();
-  document.getElementById('dStock').innerHTML = '<option value="">全部股票</option>'+stocks.map(s=>`<option value="${s.code}">${s.code} ${s.name}</option>`).join('');
-  document.getElementById('dType').innerHTML = '<option value="">全部類別</option>'+types.map(t=>`<option value="${t}">${t}</option>`).join('');
-  document.getElementById('dMonth').innerHTML = '<option value="">全部月份</option>'+months.map(m=>`<option value="${m}">${m}</option>`).join('');
+// ══ DETAIL ══
+function populateDFilters(){
+  const stocks=[...new Map(details.map(d=>[d.code,{code:d.code,name:d.name}])).values()];
+  const types=[...new Set(details.map(d=>d.tradeType))].filter(Boolean);
+  const months=[...new Set(details.map(d=>gm(d.date)))].sort();
+  document.getElementById('dStock').innerHTML='<option value="">全部股票</option>'+stocks.map(s=>`<option value="${s.code}">${s.code} ${s.name}</option>`).join('');
+  document.getElementById('dType').innerHTML='<option value="">全部類別</option>'+types.map(t=>`<option value="${t}">${t}</option>`).join('');
+  document.getElementById('dMonth').innerHTML='<option value="">全部月份</option>'+months.map(m=>`<option value="${m}">${m}</option>`).join('');
 }
-
-function renderDetail() {
-  let arr = [...details];
-  const fS=document.getElementById('dStock').value, fBS=document.getElementById('dBS').value;
-  const fT=document.getElementById('dType').value, fM=document.getElementById('dMonth').value;
+function renderDetail(){
+  let arr=[...details];
+  const fS=document.getElementById('dStock').value,fBS=document.getElementById('dBS').value;
+  const fT=document.getElementById('dType').value,fM=document.getElementById('dMonth').value;
   const q=(document.getElementById('dSearch').value||'').toLowerCase();
-  if(fS) arr=arr.filter(d=>d.code===fS);
-  if(fBS) arr=arr.filter(d=>d.bs===fBS);
-  if(fT) arr=arr.filter(d=>d.tradeType===fT);
-  if(fM) arr=arr.filter(d=>gm(d.date)===fM);
-  if(q) arr=arr.filter(d=>d.code.includes(q)||d.name.toLowerCase().includes(q));
-  document.getElementById('dCount').textContent = `${arr.length} 筆`;
-  document.getElementById('detailBody').innerHTML = arr.map(d => `
-    <tr>
-      <td class="mono">${d.date}</td>
-      <td class="mono" style="font-weight:600">${d.code}</td>
-      <td style="font-weight:500">${d.name}</td>
-      <td><span class="badge b-${d.bs}">${d.bs}</span></td>
-      <td><span class="badge b-${d.tradeType}">${d.tradeType}</span></td>
-      <td class="r mono">${fmt(d.qty)}</td>
-      <td class="r mono">${fmtD(d.price)}</td>
-      <td class="r mono">${fmt(d.total)}</td>
-      <td class="r mono">${fmt(d.fee)}</td>
-      <td class="r mono">${fmt(d.tax)}</td>
-      <td class="r mono ${(d.interest||0)>0?'neg':''}">${d.interest>0?'-'+fmt(d.interest):'-'}</td>
-      <td class="r mono">${(d.loan||0)>0?fmt(d.loan):'-'}</td>
-      <td class="r mono ${cc(d.pnl)}">${d.bs==='賣'?(d.pnl>=0?'+':'')+fmt(d.pnl):'-'}</td>
-    </tr>`).join('');
+  if(fS)arr=arr.filter(d=>d.code===fS);if(fBS)arr=arr.filter(d=>d.bs===fBS);
+  if(fT)arr=arr.filter(d=>d.tradeType===fT);if(fM)arr=arr.filter(d=>gm(d.date)===fM);
+  if(q)arr=arr.filter(d=>d.code.includes(q)||d.name.toLowerCase().includes(q));
+  document.getElementById('dCount').textContent=`${arr.length} 筆`;
+  document.getElementById('detailBody').innerHTML=arr.map(d=>`<tr>
+    <td class="mono">${d.date}</td><td class="mono" style="font-weight:600">${d.code}</td>
+    <td style="font-weight:500">${d.name}</td>
+    <td><span class="badge" style="background:${d.bs==='買'?'var(--alight)':'var(--rdim)'};color:${d.bs==='買'?'var(--accent)':'var(--red)'}">${d.bs}</span></td>
+    <td><span class="badge b-${d.tradeType}">${d.tradeType}</span></td>
+    <td class="r mono">${fmt(d.qty)}</td><td class="r mono">${fmtD(d.price)}</td>
+    <td class="r mono">${fmt(d.total)}</td><td class="r mono">${fmt(d.fee)}</td>
+    <td class="r mono">${fmt(d.tax)}</td>
+    <td class="r mono ${d.interest>0?'neg':''}" style="${d.interest>0?'font-weight:600':'color:var(--text3)'}">${d.interest>0?'-'+fmt(d.interest):'-'}</td>
+    <td class="r mono">${d.loan>0?fmt(d.loan):'-'}</td>
+    <td class="r mono ${cc(d.pnl)}">${d.bs==='賣'?(d.pnl>=0?'+':'')+fmt(d.pnl):'-'}</td>
+  </tr>`).join('');
 }
 
-// ══════════════════════════════════════════
-//  MONTHLY
-// ══════════════════════════════════════════
-function renderMonthly() {
-  const m = {};
-  getSellList().forEach(d => {
-    const k = gm(d.date);
-    if(!m[k]) m[k] = {pnl:0, n:0, w:0, interest:0, adj:0};
-    const fp = finalPnl(d);
-    m[k].pnl += fp; m[k].n++; m[k].interest += d.interest||0; m[k].adj += getTradeAdj(d);
-    if(fp>0) m[k].w++;
-  });
-  adjustments.forEach(a => {
-    const k = gm(a.date);
-    if(!m[k]) m[k] = {pnl:0, n:0, w:0, interest:0, adj:0};
-    m[k].adj += a.amount;
-  });
-  const months = Object.keys(m).sort(); let cum = 0;
-  document.getElementById('monthlyBody').innerHTML = months.map(k => {
-    const d = m[k];
-    const net = d.pnl - d.interest + d.adj;
-    cum += net;
-    const wr = d.n>0 ? d.w/d.n*100 : 0;
-    return `<tr>
-      <td class="mono" style="font-weight:600">${k}</td>
-      <td class="r">${d.n}</td>
-      <td class="r mono ${cc(d.pnl)}" style="font-weight:600">${d.pnl>=0?'+':''}${fmt(d.pnl)}</td>
-      <td class="r mono neg">${d.interest>0?'-'+fmt(d.interest):'-'}</td>
+// ══ MONTHLY ══
+function renderMonthly(){
+  const m={};
+  realized.forEach(r=>{const k=gm(r.sellDate);if(!m[k])m[k]={p:0,n:0,w:0,i:0,adj:0};
+    const fp=finalPnl(r);m[k].p+=fp;m[k].n++;m[k].i+=r.interest||0;m[k].adj+=adjDiff(r);if(fp>0)m[k].w++;});
+  adjustments.forEach(a=>{const k=gm(a.date);if(!m[k])m[k]={p:0,n:0,w:0,i:0,adj:0};m[k].adj+=a.amount;});
+  const months=Object.keys(m).sort();let cum=0;
+  document.getElementById('monthlyBody').innerHTML=months.map(k=>{
+    const d=m[k],net=d.p-d.i+d.adj;cum+=net;const wr=d.n>0?d.w/d.n*100:0;
+    return`<tr>
+      <td class="mono" style="font-weight:600">${k}</td><td class="r">${d.n}</td>
+      <td class="r mono ${cc(d.p)}" style="font-weight:600">${d.p>=0?'+':''}${fmt(d.p)}</td>
+      <td class="r mono neg">${d.i>0?'-'+fmt(d.i):'-'}</td>
       <td class="r mono ${cc(d.adj)}">${d.adj!==0?(d.adj>=0?'+':'')+fmt(d.adj):'-'}</td>
       <td class="r mono ${cc(net)}" style="font-weight:700">${net>=0?'+':''}${fmt(net)}</td>
       <td class="r">${wr.toFixed(0)}%</td>
@@ -1010,430 +1117,153 @@ function renderMonthly() {
   }).join('');
 }
 
-// ══════════════════════════════════════════
-//  ADJUSTMENTS
-// ══════════════════════════════════════════
-function adjCodeHint() {
-  const code = document.getElementById('adjCode').value.trim();
-  const found = details.find(d => d.code===code);
-  if(found) document.getElementById('adjName').value = found.name;
+// ══ ADJUSTMENTS ══
+function adjHint(){
+  const code=document.getElementById('adjCode').value.trim();
+  const found=realized.find(r=>r.code===code)||details.find(d=>d.code===code);
+  if(found) document.getElementById('adjName').value=found.name;
 }
-
-function addAdj() {
-  const code=document.getElementById('adjCode').value.trim(), name=document.getElementById('adjName').value.trim();
-  const date=document.getElementById('adjDate').value, reason=document.getElementById('adjReason').value;
-  const amtStr=document.getElementById('adjAmounts').value, note=document.getElementById('adjNote').value;
+function addAdj(){
+  const code=document.getElementById('adjCode').value.trim(),name=document.getElementById('adjName').value.trim();
+  const date=document.getElementById('adjDate').value,reason=document.getElementById('adjReason').value;
+  const amtStr=document.getElementById('adjAmounts').value,note=document.getElementById('adjNote').value;
   if(!date||!amtStr.trim()) return showMsg('adjMsg','請填寫日期與金額',false);
-  const amounts = amtStr.split(',').map(s=>parseFloat(s.trim())).filter(v=>!isNaN(v));
+  const amounts=amtStr.split(',').map(s=>parseFloat(s.trim())).filter(v=>!isNaN(v));
   if(!amounts.length) return showMsg('adjMsg','金額格式有誤',false);
-  const total = amounts.reduce((s,v)=>s+v,0);
-  adjustments.push({id:Date.now(), code, name, date, reason, amounts, amount:total, note});
-  save(); refreshAll();
-  showMsg('adjMsg', `✓ 已新增：${ADJ_REASONS[reason]} ${total>=0?'+':''}${fmt(total)}`, true);
+  const total=amounts.reduce((s,v)=>s+v,0);
+  adjustments.push({id:Date.now(),code,name,date,reason,amounts,amount:total,note});
+  save();refreshAll();
+  showMsg('adjMsg',`✓ 已新增：${ADJ_REASONS[reason]} ${total>=0?'+':''}${fmt(total)}`,true);
   ['adjCode','adjName','adjDate','adjAmounts','adjNote'].forEach(id=>document.getElementById(id).value='');
 }
-
-function addMarginCall() {
-  const date=document.getElementById('mcDate').value, amount=parseFloat(document.getElementById('mcAmount').value)||0;
-  const code=document.getElementById('mcCode').value.trim(), name=document.getElementById('mcName').value.trim();
+function addMarginCall(){
+  const date=document.getElementById('mcDate').value,amount=parseFloat(document.getElementById('mcAmount').value)||0;
+  const code=document.getElementById('mcCode').value.trim(),name=document.getElementById('mcName').value.trim();
   const note=document.getElementById('mcNote').value;
   if(!date||!amount) return showMsg('mcMsg','請填寫日期與金額',false);
-  const total = -Math.abs(amount);
+  const total=-Math.abs(amount);
   adjustments.push({id:Date.now(),code,name,date,reason:'margin_call',amounts:[total],amount:total,note:'融資追繳：'+note});
-  save(); refreshAll();
-  showMsg('mcMsg',`✓ 已記錄追繳 -$${fmt(amount)}`,true);
+  save();refreshAll();showMsg('mcMsg',`✓ 已記錄追繳 -$${fmt(amount)}`,true);
   ['mcDate','mcAmount','mcCode','mcName','mcNote'].forEach(id=>document.getElementById(id).value='');
 }
-
-function addMarginToSpot() {
-  const date=document.getElementById('m2sDate').value, code=document.getElementById('m2sCode').value.trim();
-  const name=document.getElementById('m2sName').value.trim(), shares=parseInt(document.getElementById('m2sShares').value)||0;
-  const cost=parseFloat(document.getElementById('m2sCost').value)||0, pay=parseFloat(document.getElementById('m2sPay').value)||0;
+function addMarginToSpot(){
+  const date=document.getElementById('m2sDate').value,code=document.getElementById('m2sCode').value.trim();
+  const name=document.getElementById('m2sName').value.trim(),shares=parseInt(document.getElementById('m2sShares').value)||0;
+  const cost=parseFloat(document.getElementById('m2sCost').value)||0,pay=parseFloat(document.getElementById('m2sPay').value)||0;
   const note2=document.getElementById('m2sNote').value;
   if(!date||!code) return showMsg('m2sMsg','請填寫日期與代號',false);
-  adjustments.push({id:Date.now(),code,name,date,reason:'margin_transfer',amounts:[0],amount:0,
-    note:`融資轉現股 ${name}(${code}) ${shares}股，原成本$${fmt(cost)}，補繳$${fmt(pay)}。${note2}`});
-  save(); refreshAll();
-  showMsg('m2sMsg',`✓ 已記錄 ${name}(${code}) 融資轉現股，補繳 $${fmt(pay)}`,true);
+  adjustments.push({id:Date.now(),code,name,date,reason:'margin_transfer',amounts:[0],amount:0,note:`融資轉現股 ${name}(${code}) ${shares}股，原成本$${fmt(cost)}，補繳$${fmt(pay)}。${note2}`});
+  save();refreshAll();showMsg('m2sMsg',`✓ 已記錄 ${name}(${code}) 融資轉現股`,true);
   ['m2sDate','m2sCode','m2sName','m2sShares','m2sCost','m2sPay','m2sNote'].forEach(id=>document.getElementById(id).value='');
 }
-
-function deleteAdj(id) { adjustments=adjustments.filter(a=>a.id!==id); save(); refreshAll(); }
-
-function renderAdjList() {
-  // 合併：外部 adjustments + 交易明細 inline 調整
-  const all = [];
-  adjustments.forEach(a => all.push({
-    date:a.date, label:ADJ_REASONS[a.reason]||a.reason,
-    note:a.note, amount:a.amount,
-    amounts:a.amounts, id:'ext-'+a.id, source:'external', code:a.code, name:a.name
-  }));
-  getSellList().filter(d=>d.adjPnl!==null&&d.adjPnl!==undefined).forEach(d => {
-    const diff = getTradeAdj(d);
-    all.push({date:d.date, label:'交易調整', note:`${d.name}(${d.code}) ${d.adjNote||''}`,
-      amount:diff, amounts:[diff], id:'trade-'+d.id, source:'trade', code:d.code, name:d.name});
-  });
-  all.sort((a,b) => a.date<b.date ? 1 : -1);
-
-  const byMonth = {};
-  all.forEach(a => { const k=gm(a.date); if(!byMonth[k])byMonth[k]=[]; byMonth[k].push(a); });
-  const months = Object.keys(byMonth).sort().reverse();
-  const grandTotal = all.reduce((s,a)=>s+a.amount, 0);
-
-  document.getElementById('adjGrandTotal').innerHTML = `<span class="${cc(grandTotal)}">${grandTotal>=0?'+':''}${fmt(grandTotal)}</span>`;
-
-  if(!all.length) {
-    document.getElementById('adjListWrap').innerHTML = `<div style="padding:32px;text-align:center;color:var(--text3);font-size:13px">尚無調整紀錄</div>`;
-    return;
-  }
-
-  document.getElementById('adjListWrap').innerHTML = months.map(k => {
-    const items = byMonth[k];
-    const mTotal = items.reduce((s,a)=>s+a.amount,0);
-    return `
-      <div class="month-group-head">
-        <span>${k}</span>
-        <span class="${cc(mTotal)} mono" style="font-weight:700">${mTotal>=0?'+':''}${fmt(mTotal)}</span>
-      </div>
-      <table style="width:100%">
-        <thead><tr>
-          <th style="width:100px">日期</th><th style="width:120px">調整項目</th>
-          <th style="width:100px">代號/名稱</th><th>原因備註</th>
-          <th class="r" style="width:120px">金額</th><th style="width:50px"></th>
-        </tr></thead>
-        <tbody>
-        ${items.map(a=>`<tr>
-          <td class="mono">${a.date}</td>
-          <td><span class="badge b-調整">${a.label}</span></td>
-          <td style="font-size:11px;color:var(--text2)">${a.name?`${a.name}(${a.code})`:'—'}</td>
-          <td style="color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis">
-            ${a.amounts&&a.amounts.length>1?`<span style="font-size:10px;color:var(--text3)">[${a.amounts.map(v=>(v>=0?'+':'')+fmt(v)).join(', ')}]</span> `:'' }${a.note||''}
-          </td>
-          <td class="r mono ${cc(a.amount)}" style="font-weight:700">${a.amount>=0?'+':''}${fmt(a.amount)}</td>
-          <td style="text-align:center">${a.source==='external'?`<button class="adj-del" onclick="deleteAdj(${a.id.replace('ext-','')})">×</button>`:'<span style="font-size:10px;color:var(--text3)">明細</span>'}</td>
-        </tr>`).join('')}
-        </tbody>
-      </table>`;
+function deleteAdj(id){adjustments=adjustments.filter(a=>a.id!==id);save();refreshAll();}
+function renderAdjList(){
+  const all=[];
+  adjustments.forEach(a=>all.push({date:a.date,label:ADJ_REASONS[a.reason]||a.reason,note:a.note,amount:a.amount,amounts:a.amounts,id:'ext-'+a.id,source:'external',code:a.code,name:a.name}));
+  realized.filter(r=>r.adjPnl!==null&&r.adjPnl!==undefined).forEach(r=>all.push({date:r.sellDate,label:'交易調整',note:`${r.name}(${r.code}) ${r.adjNote||''}`,amount:adjDiff(r),amounts:[adjDiff(r)],id:'t-'+r.id,source:'trade',code:r.code,name:r.name}));
+  all.sort((a,b)=>a.date<b.date?1:-1);
+  const byMonth={};all.forEach(a=>{const k=gm(a.date);if(!byMonth[k])byMonth[k]=[];byMonth[k].push(a);});
+  const months=Object.keys(byMonth).sort().reverse();
+  const grand=all.reduce((s,a)=>s+a.amount,0);
+  document.getElementById('adjGrandTotal').innerHTML=`<span class="${cc(grand)}">${grand>=0?'+':''}${fmt(grand)}</span>`;
+  if(!all.length){document.getElementById('adjListWrap').innerHTML=`<div style="padding:32px;text-align:center;color:var(--text3);font-size:13px">尚無調整紀錄</div>`;return;}
+  document.getElementById('adjListWrap').innerHTML=months.map(k=>{
+    const items=byMonth[k],mTotal=items.reduce((s,a)=>s+a.amount,0);
+    return`<div class="month-head"><span>${k}</span><span class="${cc(mTotal)} mono" style="font-weight:700">${mTotal>=0?'+':''}${fmt(mTotal)}</span></div>
+    <table style="width:100%"><thead><tr><th style="width:100px">日期</th><th style="width:120px">調整項目</th><th style="width:110px">代號/名稱</th><th>原因備註</th><th class="r" style="width:120px">金額</th><th style="width:50px"></th></tr></thead><tbody>
+    ${items.map(a=>`<tr>
+      <td class="mono">${a.date}</td>
+      <td><span class="badge b-調整">${a.label}</span></td>
+      <td style="font-size:11px;color:var(--text2)">${a.name?`${a.name}(${a.code})`:'—'}</td>
+      <td style="color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis">${a.amounts&&a.amounts.length>1?`<span style="font-size:10px;color:var(--text3)">[${a.amounts.map(v=>(v>=0?'+':'')+fmt(v)).join(', ')}] </span>`:''} ${a.note||''}</td>
+      <td class="r mono ${cc(a.amount)}" style="font-weight:700">${a.amount>=0?'+':''}${fmt(a.amount)}</td>
+      <td style="text-align:center">${a.source==='external'?`<button class="adj-del" onclick="deleteAdj(${a.id.replace('ext-','')})">×</button>`:'<span style="font-size:10px;color:var(--text3)">明細</span>'}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
   }).join('');
 }
 
-// ══════════════════════════════════════════
-//  PARSE
-// ══════════════════════════════════════════
-// 投資明細欄位（0-based）：
-// 0:成交日期 1:代號 2:名稱 3:交易種類 4:買/賣 5:交易類別
-// 6:成交數量 7:單價 8:總金額 9:手續費 10:交易稅 11:應收付款
-// 12:融資金額 13:自備款 14:融資券利息 15:融券手續費 16:標借費
-// 17:利息代扣稅款 18:二代健保 19:損益 20:交割日
+// ══ EXPORT ══
+function exportRealized(){
+  const h='代號,名稱,賣出日期,類別,賣出價,買入成本,數量,手續費,交易稅,融資利息,原始損益,調整金額,最終損益,淨報酬率%,配對狀態,調整備註\n';
+  const rows=realized.map(r=>{const fp=finalPnl(r),diff=adjDiff(r),netRet=r.cost>0?(fp-r.interest)/r.cost*100:0;return`${r.code},${r.name},${r.sellDate},${r.tradeType},${r.sellPrice},${r.cost||''},${r.qty},${r.fee},${r.tax},${r.interest||0},${r.pnl},${diff||''},${fp},${netRet.toFixed(2)},${r.matched?'已配對':'未配對'},${r.adjNote||''}`}).join('\n');
+  dl('realized.csv','\ufeff'+h+rows);
+}
+function exportDetail(){
+  const h='日期,代號,名稱,買賣,類別,數量,單價,總額,手續費,交易稅,融資利息,融資金額,損益\n';
+  const rows=details.map(d=>`${d.date},${d.code},${d.name},${d.bs},${d.tradeType},${d.qty},${d.price},${d.total},${d.fee},${d.tax},${d.interest||0},${d.loan||0},${d.bs==='賣'?d.pnl:''}`).join('\n');
+  dl('detail.csv','\ufeff'+h+rows);
+}
+function exportHold(){
+  const h='代號,名稱,類別,庫存,現價,市值,成本,均價,手續費,利息,損益,報酬率%\n';
+  const rows=holdings.map(h=>`${h.code},${h.name},${h.tradeType},${h.qty},${h.price},${h.mktVal},${h.costAmt},${h.avgPrice},${h.fee||0},${h.interest||0},${h.pnl},${h.ret.toFixed(2)}`).join('\n');
+  dl('holdings.csv','\ufeff'+h+rows);
+}
+function exportAdj(){
+  const h='日期,代號,名稱,調整項目,原因備註,金額\n';
+  const rows=adjustments.map(a=>`${a.date},${a.code},${a.name},${ADJ_REASONS[a.reason]||a.reason},${a.note},${a.amount}`).join('\n');
+  dl('adjustments.csv','\ufeff'+h+rows);
+}
+function dl(name,content){const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(content);a.download=name;a.click();}
+function clearAll(){realized=[];details=[];holdings=[];adjustments=[];holdDate='';save();refreshAll();}
 
-function parseDetailRows(rows) {
-  const parsed = [];
-  for(let i=1; i<rows.length; i++) {
-    const r = rows[i];
-    if(!r[0] || String(r[0]).includes('TWD') || String(r[0]).includes('總金額')) continue;
-    const code = String(r[1]||'').trim();
-    if(!code) continue;
-    const bs = String(r[4]||'').trim();
-    const tradeType = String(r[5]||'').trim();
-    const qty = n(r[6]);
-    const price = n(r[7]);
-    const total = n(r[8]);
-    const fee = n(r[9]);
-    const tax = n(r[10]);
-    const interest = n(r[14]); // 融資券利息
-    const loan = n(r[12]);     // 融資金額
-    const pnl = bs==='賣' ? n(r[19]) : 0;
-    // buyCost: 買入時的應收付款（負數轉正）
-    const cashflow = n(r[11]);
-
-    parsed.push({
-      id: Date.now() + Math.random(),
-      date: xlDate(r[0]),
-      code, name: String(r[2]||'').trim(),
-      bs, tradeType, qty, price, total, fee, tax, interest, loan, pnl,
-      buyCost: bs==='買' ? Math.abs(cashflow) : 0,
-      adjPnl: null, adjBaseVal: undefined, adjExtraFee: 0, adjNote: ''
-    });
-  }
-  return parsed;
+// ══ DATA INFO ══
+function renderDataInfo(){
+  const sells=realized,tot=sells.reduce((s,r)=>s+finalPnl(r),0),ti=sells.reduce((s,r)=>s+(r.interest||0),0);
+  document.getElementById('dataInfo').innerHTML=`
+    已實現損益：<strong>${realized.length} 筆</strong><br>
+    投資明細：<strong>${details.length} 筆</strong>（買${details.filter(d=>d.bs==='買').length}/賣${details.filter(d=>d.bs==='賣').length}）<br>
+    持倉股票：<strong>${holdings.length} 支</strong>${holdDate?` <span style="color:var(--accent);font-size:11px">${holdDate}</span>`:''}<br>
+    利息配對：<strong>${realized.filter(r=>r.matched).length}/${realized.length}</strong>筆<br>
+    已實現損益：<strong class="${cc(tot)}">${tot>=0?'+':''}${fmt(tot)}</strong><br>
+    融資利息：<strong class="neg">-${fmt(ti)}</strong>`;
+  document.getElementById('sidebarStatus').innerHTML=realized.length>0?`已載入 <b>${realized.length}</b> 筆`:'尚無資料';
 }
 
-function parseHoldRows(rows) {
-  const ns = v => parseFloat(String(v||'').replace(/[,+%\s]/g,''))||0;
-  const s2 = v => String(v||'').trim();
-  const parsed = [];
-  for(let i=2; i<rows.length; i++) {
-    const r = rows[i];
-    if(String(r[0]||'').includes('總市值')||String(r[0]||'').includes('Total')) continue;
-    if(String(r[0]||'').trim()!=='') continue;
-    const code=s2(r[1]), qty=ns(r[4]);
-    if(!code||!qty) continue;
-    const retStr=s2(r[13]);
-    parsed.push({
-      code, name:s2(r[2])||code, tradeType:s2(r[3])||'現股', qty,
-      price:ns(r[5]), mktVal:ns(r[6]),
-      costAmt:s2(r[7])==='-'?0:ns(r[7]), avgPrice:s2(r[8])==='-'?0:ns(r[8]),
-      fee:ns(r[9]), tradeTax:ns(r[10]), interest:ns(r[11]),
-      pnl:ns(r[12]), ret:retStr==='-'?0:parseFloat(retStr.replace(/[+%]/g,''))||0
-    });
-  }
-  return parsed;
+// ══ MESSAGES ══
+function showMsg(id,msg,ok){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=msg;el.className='rmsg '+(ok?'ok':'err');el.style.display='block';
+  setTimeout(()=>el.style.display='none',4000);
 }
-
-// ══════════════════════════════════════════
-//  EXCEL IMPORT
-// ══════════════════════════════════════════
-function handleDetailFile(file) {
-  if(!file) return;
-  const zone = document.getElementById('dropDetail');
-  zone.innerHTML = '<div style="font-size:26px;margin-bottom:8px">⏳</div><div style="font-size:13px">讀取中...</div>';
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      detailWB = XLSX.read(e.target.result, {type:'array', cellDates:true});
-      const names = detailWB.SheetNames;
-      document.getElementById('detailSheetName').innerHTML = names.map((s,i)=>`<option value="${i}">${s}</option>`).join('');
-      document.getElementById('detailSheetSel').style.display = '';
-      zone.innerHTML = `<div style="font-size:26px;margin-bottom:8px">✅</div><div style="font-size:13px;font-weight:600">${file.name}</div><div style="font-size:11px;color:var(--text3)">${names.length} 個工作表</div>`;
-      previewDetail();
-    } catch(err) {
-      zone.innerHTML = `<div style="font-size:26px;margin-bottom:8px">❌</div><div style="font-size:13px;color:var(--red)">讀取失敗：${err.message}</div>`;
-    }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-function previewDetail() {
-  if(!detailWB) return;
-  const idx = parseInt(document.getElementById('detailSheetName').value);
-  const sheet = detailWB.Sheets[detailWB.SheetNames[idx]];
-  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false});
-  const parsed = parseDetailRows(rows);
-  const buys = parsed.filter(d=>d.bs==='買').length;
-  const sells = parsed.filter(d=>d.bs==='賣').length;
-  const withInterest = parsed.filter(d=>d.interest>0).length;
-  document.getElementById('detailPreview').style.display = '';
-  document.getElementById('detailPreview').innerHTML = `偵測到 <strong>${parsed.length} 筆</strong>（買入 ${buys} / 賣出 ${sells}），其中 ${withInterest} 筆有融資利息`;
-  const btn = document.getElementById('detailImportBtn');
-  btn.disabled = parsed.length===0;
-  btn.textContent = parsed.length>0 ? `匯入 ${parsed.length} 筆投資明細` : '偵測不到有效資料';
-  detailWB._idx = idx;
-}
-
-function importDetailExcel() {
-  if(!detailWB) return;
-  const sheet = detailWB.Sheets[detailWB.SheetNames[detailWB._idx||0]];
-  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false});
-  const parsed = parseDetailRows(rows);
-  if(!parsed.length) { showMsg('detailMsg','無法解析，請確認格式',false); return; }
-  const mode = document.getElementById('detailImportMode').value;
-  if(mode==='replace') details = parsed;
-  else details = [...details, ...parsed];
-  save(); refreshAll();
-  showMsg('detailMsg', `✓ 匯入 ${parsed.length} 筆，共 ${details.length} 筆`, true);
-}
-
-function handleHoldFile(file) {
-  if(!file) return;
-  const zone = document.getElementById('dropHold');
-  zone.innerHTML = '<div style="font-size:22px;margin-bottom:6px">⏳</div><div style="font-size:13px">讀取中...</div>';
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      holdWB = XLSX.read(e.target.result, {type:'array'});
-      const names = holdWB.SheetNames;
-      const sel = document.getElementById('holdSheetName');
-      sel.innerHTML = names.map((s,i)=>`<option value="${i}"${s.includes('未實現')?'selected':''}>${s}</option>`).join('');
-      document.getElementById('holdSheetSel').style.display = '';
-      zone.innerHTML = `<div style="font-size:22px;margin-bottom:6px">✅</div><div style="font-size:13px;font-weight:600">${file.name}</div><div style="font-size:11px;color:var(--text3)">${names.length} 個工作表</div>`;
-      previewHold();
-    } catch(err) {
-      zone.innerHTML = `<div style="font-size:22px;margin-bottom:6px">❌</div><div style="font-size:13px;color:var(--red)">讀取失敗：${err.message}</div>`;
-    }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-function previewHold() {
-  if(!holdWB) return;
-  const idx = parseInt(document.getElementById('holdSheetName').value);
-  const sheet = holdWB.Sheets[holdWB.SheetNames[idx]];
-  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
-  let cnt = 0;
-  for(let i=2; i<rows.length; i++) {
-    if(String(rows[i][0]||'').includes('總市值')) continue;
-    if(String(rows[i][0]||'').trim()!=='') continue;
-    if(String(rows[i][1]||'').trim()&&parseFloat(String(rows[i][4]||'').replace(/,/g,''))) cnt++;
-  }
-  document.getElementById('holdPreview').style.display = '';
-  document.getElementById('holdPreview').innerHTML = `偵測到 <strong>${cnt} 支</strong>持股`;
-  const btn = document.getElementById('holdImportBtn');
-  btn.disabled = cnt===0; btn.textContent = cnt>0?`匯入 ${cnt} 支持股`:'偵測不到資料';
-  holdWB._idx = idx;
-}
-
-function importHoldExcel() {
-  if(!holdWB) return;
-  const sheet = holdWB.Sheets[holdWB.SheetNames[holdWB._idx||0]];
-  const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
-  const parsed = parseHoldRows(rows);
-  if(!parsed.length) { showMsg('holdingsMsg','無法解析',false); return; }
-  // 自動抓今天作為結算日期（如果未設定）
-  if(!holdDate) {
-    const today = new Date();
-    holdDate = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
-  }
-  holdings = parsed;
-  save(); refreshAll();
-  showMsg('holdingsMsg', `✓ 已匯入 ${parsed.length} 支持股`, true);
-}
-
-// ══════════════════════════════════════════
-//  QUICK IMPORT
-// ══════════════════════════════════════════
-function quickImportDetail(file) {
-  if(!file) return;
-  document.getElementById('quickDetailFile').value = '';
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false});
-      const parsed = parseDetailRows(rows);
-      if(!parsed.length) { showToast('投資明細匯入失敗：偵測不到資料',false); return; }
-      details = parsed; // 快速匯入預設取代
-      save(); refreshAll();
-      showToast(`✓ 已匯入 ${parsed.length} 筆投資明細（買${parsed.filter(d=>d.bs==='買').length}/賣${parsed.filter(d=>d.bs==='賣').length}）`, true);
-    } catch(err) { showToast('讀取失敗：'+err.message, false); }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-function quickImportHoldings(file) {
-  if(!file) return;
-  document.getElementById('quickHoldFile').value = '';
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const wb = XLSX.read(e.target.result, {type:'array'});
-      const sn = wb.SheetNames.find(s=>s.includes('未實現'))||wb.SheetNames[0];
-      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], {header:1, defval:''});
-      const parsed = parseHoldRows(rows);
-      if(!parsed.length) { showToast('未實現匯入失敗：偵測不到資料',false); return; }
-      holdings = parsed;
-      if(!holdDate) {
-        const today = new Date();
-        holdDate = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
-      }
-      save(); refreshAll();
-      showToast(`✓ 已匯入 ${parsed.length} 支持股`, true);
-    } catch(err) { showToast('讀取失敗：'+err.message, false); }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-// ══════════════════════════════════════════
-//  DRAG & DROP
-// ══════════════════════════════════════════
-function setupDrop(zoneId, handler) {
-  const z = document.getElementById(zoneId); if(!z) return;
-  z.addEventListener('dragover', e=>{e.preventDefault();z.classList.add('drag-over');});
-  z.addEventListener('dragleave', ()=>z.classList.remove('drag-over'));
-  z.addEventListener('drop', e=>{e.preventDefault();z.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)handler(f);});
-}
-
-// ══════════════════════════════════════════
-//  EXPORT
-// ══════════════════════════════════════════
-function exportAll() {
-  const sells = getSellList();
-  const h = '代號,名稱,賣出日期,類別,賣出價,買入成本,數量,手續費,交易稅,融資利息,原始損益,調整金額,最終損益,報酬率%,調整備註\n';
-  const rows = sells.map(d => {
-    const fp=finalPnl(d), diff=getTradeAdj(d), ret=d.buyCost>0?fp/d.buyCost*100:0;
-    return `${d.code},${d.name},${d.date},${d.tradeType},${d.price},${d.buyCost||''},${d.qty},${d.fee},${d.tax},${d.interest||0},${d.pnl},${diff||''},${fp},${ret.toFixed(2)},${d.adjNote||''}`;
-  }).join('\n');
-  dl('realized.csv', '\ufeff'+h+rows);
-}
-function exportDetailCSV() {
-  const h = '日期,代號,名稱,買賣,類別,數量,單價,總金額,手續費,交易稅,融資利息,融資金額,損益\n';
-  const rows = details.map(d=>`${d.date},${d.code},${d.name},${d.bs},${d.tradeType},${d.qty},${d.price},${d.total},${d.fee},${d.tax},${d.interest||0},${d.loan||0},${d.bs==='賣'?d.pnl:''}`).join('\n');
-  dl('detail.csv', '\ufeff'+h+rows);
-}
-function exportHoldCSV() {
-  const h = '代號,名稱,類別,庫存,現價,市值,成本,均價,手續費,利息,損益,報酬率%\n';
-  const rows = holdings.map(h=>`${h.code},${h.name},${h.tradeType},${h.qty},${h.price},${h.mktVal},${h.costAmt},${h.avgPrice},${h.fee||0},${h.interest||0},${h.pnl},${h.ret.toFixed(2)}`).join('\n');
-  dl('holdings.csv', '\ufeff'+h+rows);
-}
-function exportAdjCSV() {
-  const h = '日期,代號,名稱,調整項目,原因備註,金額\n';
-  const rows = adjustments.map(a=>`${a.date},${a.code},${a.name},${ADJ_REASONS[a.reason]||a.reason},${a.note},${a.amount}`).join('\n');
-  dl('adjustments.csv', '\ufeff'+h+rows);
-}
-function dl(name, content) { const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(content); a.download=name; a.click(); }
-function clearAll() { details=[]; holdings=[]; adjustments=[]; holdDate=''; save(); refreshAll(); }
-
-// ══════════════════════════════════════════
-//  MESSAGES
-// ══════════════════════════════════════════
-function showMsg(id, msg, ok) {
-  const el=document.getElementById(id); if(!el) return;
-  el.textContent=msg; el.className='rmsg '+(ok?'ok':'err'); el.style.display='block';
-  setTimeout(()=>el.style.display='none', 4000);
-}
-function showToast(msg, ok) {
+function showToast(msg,ok){
   let t=document.getElementById('_toast');
-  if(!t){t=document.createElement('div');t.id='_toast';t.style.cssText='position:fixed;top:66px;right:20px;z-index:500;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:600;max-width:400px;box-shadow:0 8px 30px rgba(30,34,64,.15);transition:all .3s;pointer-events:none';document.body.appendChild(t);}
-  t.style.background=ok?'#e6f8f3':'#fff0f0'; t.style.color=ok?'#0ca678':'#e03131';
+  if(!t){t=document.createElement('div');t.id='_toast';t.style.cssText='position:fixed;top:66px;right:20px;z-index:500;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:600;max-width:420px;box-shadow:0 8px 30px rgba(30,34,64,.15);transition:all .3s;pointer-events:none';document.body.appendChild(t);}
+  t.style.background=ok?'#e6f8f3':'#fff0f0';t.style.color=ok?'#0ca678':'#e03131';
   t.style.border=`1px solid ${ok?'rgba(12,166,120,.2)':'rgba(224,49,49,.2)'}`;
-  t.style.opacity='1'; t.style.transform='translateY(0)'; t.textContent=msg;
-  clearTimeout(t._t); t._t=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(-4px)';}, 4500);
+  t.style.opacity='1';t.style.transform='translateY(0)';t.textContent=msg;
+  clearTimeout(t._t);t._t=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(-4px)';},4500);
 }
 
-// ══════════════════════════════════════════
-//  DATA INFO
-// ══════════════════════════════════════════
-function renderDataInfo() {
-  const sells = getSellList();
-  const buys = details.filter(d=>d.bs==='買');
-  const totalInterest = sells.reduce((s,d)=>s+(d.interest||0),0);
-  const totalAdj2 = adjustments.reduce((s,a)=>s+a.amount,0);
-  document.getElementById('dataInfo').innerHTML = `
-    投資明細：<strong>${details.length} 筆</strong>（買${buys.length}/賣${sells.length}）<br>
-    持倉股票：<strong>${holdings.length} 支</strong>${holdDate?` <span style="color:var(--accent);font-size:11px">${holdDate}抓取</span>`:''}<br>
-    已實現損益：<strong class="${cc(sells.reduce((s,d)=>s+finalPnl(d),0))}">${(sells.reduce((s,d)=>s+finalPnl(d),0)>=0?'+':'')+ fmt(sells.reduce((s,d)=>s+finalPnl(d),0))}</strong><br>
-    融資利息合計：<strong class="neg">-${fmt(totalInterest)}</strong><br>
-    調整紀錄：<strong>${adjustments.length} 筆（${totalAdj2>=0?'+':''}${fmt(totalAdj2)}）</strong>`;
-  document.getElementById('sidebarStatus').innerHTML = details.length>0 ? `已載入 <b>${details.length}</b> 筆` : '尚無資料';
-}
-
-// ══════════════════════════════════════════
-//  REFRESH ALL
-// ══════════════════════════════════════════
-function refreshAll() {
+// ══ REFRESH ══
+function refreshAll(){
   renderMetrics();
-  renderChartMonthly(); renderChartType(); renderChartDist(); renderChartHold();
-  populateRealizedFilters(); renderRealized();
+  renderChartMonthly();renderChartType();renderChartDist();renderChartHold();
+  populateRFilters();renderRealized();
   renderHoldings();
-  populateDetailFilters(); renderDetail();
+  populateDFilters();renderDetail();
   renderMonthly();
   renderAdjList();
   renderDataInfo();
 }
 
-// ══════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════
-load();
-if(holdDate) {
-  document.getElementById('holdDate').value = holdDate;
-  document.getElementById('holdDateLabel').textContent = holdDate ? `（${holdDate} 抓取）` : '';
+// ══ DRAG DROP ══
+function setupDrop(id,type){
+  const z=document.getElementById(id);if(!z)return;
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag-over');});
+  z.addEventListener('dragleave',()=>z.classList.remove('drag-over'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)handleFile(type,f);});
 }
+
+// ══ INIT ══
+load();
+if(holdDate) document.getElementById('holdDate').value=holdDate;
 refreshAll();
-document.getElementById('adjModal').addEventListener('click', e => { if(e.target===document.getElementById('adjModal')) closeAdjModal(); });
-document.addEventListener('DOMContentLoaded', () => {
-  setupDrop('dropDetail', handleDetailFile);
-  setupDrop('dropHold', handleHoldFile);
+document.getElementById('adjModal').addEventListener('click',e=>{if(e.target===document.getElementById('adjModal'))closeModal();});
+document.addEventListener('DOMContentLoaded',()=>{
+  setupDrop('dropR','realized');
+  setupDrop('dropD','detail');
+  setupDrop('dropH','holdings');
 });
 </script>
 </body>
