@@ -261,6 +261,12 @@ input[type=file]{display:none;}
 .toast{position:fixed;bottom:20px;right:22px;background:var(--text);color:#fff;padding:10px 17px;border-radius:var(--r);font-size:13px;z-index:9999;animation:ti .3s ease;box-shadow:var(--sh-md);}
 @keyframes ti{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
 
+/* ── ACCOUNT SWITCHER ── */
+.acct-sw{display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:3px;}
+.acct-btn{padding:4px 14px;border-radius:16px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:.15s;background:transparent;color:var(--muted);}
+.acct-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 6px rgba(59,110,248,.3);}
+.acct-btn:not(.active):hover{color:var(--text);}
+
 @media(max-width:860px){.chart-row.c2,.chart-row.c3{grid-template-columns:1fr;}.upload-grid{grid-template-columns:1fr;}.sb{width:180px;}}
 </style>
 </head>
@@ -274,6 +280,18 @@ input[type=file]{display:none;}
   </div>
   <div class="hdr-mid" id="hdr-chips"></div>
   <div class="hdr-right">
+    <div class="acct-sw">
+      <span style="font-size:11px;color:var(--muted);padding:0 4px 0 6px;">帳戶</span>
+      <select id="acct-select" onchange="switchAcct(this.value)" style="border:none;background:transparent;font-size:13px;font-weight:600;color:var(--accent);cursor:pointer;font-family:var(--font);padding:2px 4px;outline:none;">
+        <option value="元大音">元大音</option>
+        <option value="元大林">元大林</option>
+        <option value="國泰音">國泰音</option>
+        <option value="國泰林">國泰林</option>
+        <option value="國泰展">國泰展</option>
+        <option value="元大佩">元大佩</option>
+        <option value="新光湯">新光湯</option>
+      </select>
+    </div>
     <div class="hdr-pnl neu" id="hdr-pnl">尚無資料</div>
   </div>
 </div>
@@ -471,19 +489,57 @@ input[type=file]{display:none;}
 let tradesRaw=[],pnlRaw=[],matchedRows=[],userEdits={};
 let allMonths=[],selectedMonths=new Set();
 let currentPage='overview',modalKey=null,modalCands=[],selCands=new Set();
+let currentAcct='A';
 const charts={};
-const LS={t:'spx_t',p:'spx_p',e:'spx_e',m:'spx_m'};
+
+function lsKey(k){return `spx_${currentAcct}_${k}`;}
+function LS(){return {t:lsKey('t'),p:lsKey('p'),e:lsKey('e'),m:lsKey('m')};}
 
 window.onload=()=>{
-  try{tradesRaw=JSON.parse(localStorage.getItem(LS.t)||'[]');}catch(e){}
-  try{pnlRaw   =JSON.parse(localStorage.getItem(LS.p)||'[]');}catch(e){}
-  try{userEdits=JSON.parse(localStorage.getItem(LS.e)||'{}');}catch(e){}
-  try{const sm=JSON.parse(localStorage.getItem(LS.m)||'[]');selectedMonths=new Set(sm);}catch(e){}
+  // restore last used account
+  try{currentAcct=localStorage.getItem('spx_acct')||'元大音';}catch(e){}
+  updateAcctUI();
+  loadAcct();
+};
+
+function switchAcct(acct){
+  if(acct===currentAcct)return;
+  currentAcct=acct;
+  try{localStorage.setItem('spx_acct',acct);}catch(e){}
+  updateAcctUI();
+  loadAcct();
+  toast(`已切換到帳戶 ${acct}`);
+}
+
+function updateAcctUI(){
+  const sel=document.getElementById('acct-select');
+  if(sel)sel.value=currentAcct;
+}
+
+function loadAcct(){
+  // reset runtime state
+  tradesRaw=[];pnlRaw=[];matchedRows=[];userEdits={};
+  allMonths=[];selectedMonths=new Set();
+  // reset UI
+  ['dz-t','dz-p'].forEach(id=>document.getElementById(id).classList.remove('loaded'));
+  document.getElementById('lbl-t').textContent='拖放或點擊上傳 xlsx / csv';
+  document.getElementById('lbl-p').textContent='拖放或點擊上傳 xlsx / csv';
+  document.getElementById('sb-months').innerHTML='';
+  document.getElementById('hdr-chips').innerHTML='';
+  document.getElementById('hdr-pnl').className='hdr-pnl neu';
+  document.getElementById('hdr-pnl').textContent='尚無資料';
+  // load from localStorage
+  const ls=LS();
+  try{tradesRaw=JSON.parse(localStorage.getItem(ls.t)||'[]');}catch(e){}
+  try{pnlRaw   =JSON.parse(localStorage.getItem(ls.p)||'[]');}catch(e){}
+  try{userEdits=JSON.parse(localStorage.getItem(ls.e)||'{}');}catch(e){}
+  try{const sm=JSON.parse(localStorage.getItem(ls.m)||'[]');selectedMonths=new Set(sm);}catch(e){}
   if(tradesRaw.length)setLoaded('dz-t','lbl-t',`✓ 交易明細 ${tradesRaw.length} 筆`);
   if(pnlRaw.length)   setLoaded('dz-p','lbl-p',`✓ 已實現損益 ${pnlRaw.length} 筆`);
   updBtn();
   if(tradesRaw.length&&pnlRaw.length)runMatch(false);
-};
+  else nav('overview');
+}
 
 // ═══════════════════════════════════════════════
 // NAV
@@ -534,7 +590,7 @@ function selNone(){
   selectedMonths.clear();saveMonths();buildSidebar();updateHdrChips();
   if(currentPage!=='import'&&currentPage!=='match')nav(currentPage);
 }
-function saveMonths(){try{localStorage.setItem(LS.m,JSON.stringify([...selectedMonths]));}catch(e){}}
+function saveMonths(){try{localStorage.setItem(LS().m,JSON.stringify([...selectedMonths]));}catch(e){}}
 
 function updateHdrChips(){
   const sel=[...selectedMonths].sort();
@@ -589,7 +645,7 @@ function parseFile(file,which){
       if(which==='t'){
         // 交易明細：覆蓋（每次匯出都是完整明細）
         tradesRaw=normT(rows);
-        localStorage.setItem(LS.t,JSON.stringify(tradesRaw));
+        localStorage.setItem(LS().t,JSON.stringify(tradesRaw));
         setLoaded('dz-t','lbl-t',`✓ 交易明細 ${tradesRaw.length} 筆`);
         addLog(`✅ 交易明細：${tradesRaw.length} 筆`);
       } else {
@@ -600,7 +656,7 @@ function parseFile(file,which){
         const existKeys=new Set(existing.map(r=>r._dupKey));
         const newRows=incoming.filter(r=>!existKeys.has(r._dupKey));
         pnlRaw=[...existing,...newRows];
-        localStorage.setItem(LS.p,JSON.stringify(pnlRaw));
+        localStorage.setItem(LS().p,JSON.stringify(pnlRaw));
         const msg=newRows.length>0
           ?`✅ 已實現損益：新增 ${newRows.length} 筆（略過重複 ${incoming.length-newRows.length} 筆），累計 ${pnlRaw.length} 筆`
           :`⚠️ 已實現損益：${incoming.length} 筆全部已存在，無新增（累計 ${pnlRaw.length} 筆）`;
@@ -1204,7 +1260,7 @@ function saveSt(el){
   const mb=document.getElementById('badge-match');if(mb){if(no>0){mb.style.display='';mb.textContent=no;}else mb.style.display='none';}
   saveE();
 }
-function saveE(){try{localStorage.setItem(LS.e,JSON.stringify(userEdits));}catch(e){}}
+function saveE(){try{localStorage.setItem(LS().e,JSON.stringify(userEdits));}catch(e){}}
 
 // ═══════════════════════════════════════════════
 // MODAL
@@ -1299,21 +1355,23 @@ function exportAll(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`損益報表_${new Date().toISOString().slice(0,10)}.csv`;a.click();
 }
 function clearPnl(){
-  if(!confirm(`確定清除所有已實現損益資料（共 ${pnlRaw.length} 筆）？\n調整金額和備註也會一起清除。`))return;
+  if(!confirm(`確定清除帳戶 ${currentAcct} 的已實現損益資料（共 ${pnlRaw.length} 筆）？\n調整金額和備註也會一起清除。`))return;
   pnlRaw=[];matchedRows=[];userEdits={};
-  localStorage.removeItem(LS.p);localStorage.removeItem(LS.e);
+  const ls=LS();
+  localStorage.removeItem(ls.p);localStorage.removeItem(ls.e);
   document.getElementById('dz-p').classList.remove('loaded');
   document.getElementById('lbl-p').textContent='拖放或點擊上傳 xlsx / csv';
   document.getElementById('sb-months').innerHTML='';
   document.getElementById('hdr-chips').innerHTML='';
   document.getElementById('hdr-pnl').className='hdr-pnl neu';
   document.getElementById('hdr-pnl').textContent='尚無資料';
-  updBtn();nav('overview');toast('已清除已實現損益資料，交易明細保留');
+  updBtn();nav('overview');toast(`帳戶 ${currentAcct} 已實現損益已清除，交易明細保留`);
 }
 function clearAll(){
-  if(!confirm('確定清除所有資料？'))return;
+  if(!confirm(`確定清除帳戶 ${currentAcct} 的所有資料？`))return;
   tradesRaw=[];pnlRaw=[];matchedRows=[];userEdits={};allMonths=[];selectedMonths=new Set();
-  Object.values(LS).forEach(k=>localStorage.removeItem(k));
+  const ls=LS();
+  [ls.t,ls.p,ls.e,ls.m].forEach(k=>localStorage.removeItem(k));
   ['dz-t','dz-p'].forEach(id=>document.getElementById(id).classList.remove('loaded'));
   document.getElementById('lbl-t').textContent='拖放或點擊上傳 xlsx / csv';
   document.getElementById('lbl-p').textContent='拖放或點擊上傳 xlsx / csv';
@@ -1322,7 +1380,7 @@ function clearAll(){
   document.getElementById('hdr-chips').innerHTML='';
   document.getElementById('hdr-pnl').className='hdr-pnl neu';
   document.getElementById('hdr-pnl').textContent='尚無資料';
-  updBtn();nav('overview');toast('已清除所有資料');
+  updBtn();nav('overview');toast(`帳戶 ${currentAcct} 所有資料已清除`);
 }
 
 // ═══════════════════════════════════════════════
