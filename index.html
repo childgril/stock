@@ -858,7 +858,8 @@ function deleteSnap(date){
   updateUrSnapList();
   if(currentPage==='assets')renderAssets();
   toast(`已刪除 ${date} 快照`);
-}if(!v&&v!==0)return '';const s=String(v).trim();if(!s)return '';if(/^\d{4}[\/\-]\d{2}[\/\-]\d{2}/.test(s))return s.replace(/\//g,'-').slice(0,10);const n=parseFloat(s);if(!isNaN(n)&&n>40000&&n<60000)return new Date(Math.round((n-25569)*86400*1000)).toISOString().slice(0,10);return s;}
+}
+function ed(v){if(!v&&v!==0)return '';const s=String(v).trim();if(!s)return '';if(/^\d{4}[\/\-]\d{2}[\/\-]\d{2}/.test(s))return s.replace(/\//g,'-').slice(0,10);const n=parseFloat(s);if(!isNaN(n)&&n>40000&&n<60000)return new Date(Math.round((n-25569)*86400*1000)).toISOString().slice(0,10);return s;}
 function nd(s){if(!s)return '';s=String(s).trim();if(/^\d{4}[\/\-]\d{2}[\/\-]\d{2}/.test(s))return s.replace(/\//g,'-').slice(0,10);return ed(s);}
 function pn(v){if(v===null||v===undefined||v==='')return 0;return parseFloat(String(v).replace(/,/g,''))||0;}
 function pk(p){return Math.round(parseFloat(p)*100);}
@@ -1015,26 +1016,6 @@ function exportAssets(){
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download=`持倉快照_${curDate}.csv`;a.click();
-}
-
-function updateUrSnapList(){
-  const el=document.getElementById('ur-snap-list');if(!el)return;
-  const dates=Object.keys(urSnaps).sort((a,b)=>b.localeCompare(a));
-  if(!dates.length){el.innerHTML='';return;}
-  el.innerHTML='<div style="margin-bottom:5px;font-weight:500;font-size:12px;">已儲存快照：</div>'+
-    dates.map(d=>`<span style="display:inline-flex;align-items:center;gap:5px;margin:2px 4px 2px 0;background:var(--bg3);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-family:var(--mono);font-size:11px;">${d}（${urSnaps[d].length}筆）<span onclick="deleteSnap('${d}')" style="cursor:pointer;color:var(--red);font-size:13px;" title="刪除">×</span></span>`).join('');
-}
-
-function deleteSnap(date){
-  if(!confirm(`確定刪除 ${date} 的快照？`))return;
-  delete urSnaps[date];
-  try{localStorage.setItem(LS().ur,JSON.stringify(urSnaps));}catch(e){}
-  const cnt=Object.keys(urSnaps).length;
-  if(cnt)setLoaded('dz-ur','lbl-ur',`✓ 未實現快照 ${cnt} 份`);
-  else{document.getElementById('dz-ur').classList.remove('loaded');document.getElementById('lbl-ur').textContent='拖放或點擊上傳未實現 xlsx';}
-  updateUrSnapList();
-  if(currentPage==='assets')renderAssets();
-  toast(`已刪除 ${date} 快照`);
 }
 
 // ═══════════════════════════════════════════════
