@@ -301,6 +301,7 @@ input[type=file]{display:none;}
 <div class="sb">
   <div class="sb-nav">
     <div class="sb-nav-item active" onclick="nav('overview')" id="sbn-overview"><span class="ico">🏠</span>總覽</div>
+    <div class="sb-nav-item" onclick="nav('assets')" id="sbn-assets"><span class="ico">💰</span>資產總覽</div>
     <div class="sb-nav-item" onclick="nav('stocks')" id="sbn-stocks"><span class="ico">📊</span>個股統計<span class="sb-badge" id="badge-stocks">0</span></div>
     <div class="sb-nav-item" onclick="nav('daytrade')" id="sbn-daytrade"><span class="ico">⚡</span>當沖專區</div>
     <div class="sb-nav-item" onclick="nav('margin')" id="sbn-margin"><span class="ico">🏦</span>融資券統計</div>
@@ -416,6 +417,53 @@ input[type=file]{display:none;}
   </div>
 </div>
 
+<!-- ══ ASSETS ══ -->
+<div id="page-assets" class="page">
+  <div class="page-hdr">
+    <div><div class="page-title">資產總覽</div><div class="page-sub" id="ast-sub">未實現持倉 + 已實現損益</div></div>
+    <div class="page-actions">
+      <button class="btn btn-success btn-sm" onclick="exportAssets()">⬇ 匯出持倉</button>
+    </div>
+  </div>
+  <div id="ast-empty" class="empty"><div class="ei">💰</div><h3>請先匯入未實現損益表</h3><p>至「匯入資料」頁面上傳未實現 xlsx</p></div>
+  <div id="ast-content" style="display:none;">
+    <!-- 快照日期選擇器 -->
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--muted);font-weight:500;">快照日期：</span>
+      <select id="ast-date-sel" onchange="renderAssets()" style="background:var(--bg2);border:1px solid var(--border2);color:var(--accent);padding:5px 10px;border-radius:var(--r-sm);font-size:13px;font-weight:600;font-family:var(--mono);cursor:pointer;"></select>
+      <span id="ast-snap-info" style="font-size:11px;color:var(--muted);"></span>
+    </div>
+    <!-- 總資產摘要卡片 -->
+    <div class="cards" id="ast-cards"></div>
+    <!-- 圖表 -->
+    <div class="chart-row c2">
+      <div class="chart-box"><h3>持倉市值分布</h3><canvas id="ch-ast-pie"></canvas></div>
+      <div class="chart-box"><h3>個股損益排行（未實現）</h3><canvas id="ch-ast-bar"></canvas></div>
+    </div>
+    <!-- 持倉明細表 -->
+    <div class="panel">
+      <div class="ph"><h3>📋 持倉明細</h3><span class="ph-sub" id="ast-count"></span>
+        <div class="ph-right">
+          <select id="ast-type-f" onchange="renderAssetsTable()" style="background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:var(--r-sm);font-size:12px;">
+            <option value="">全部類別</option><option value="現股">現股</option><option value="融資">融資</option><option value="融券">融券</option>
+          </select>
+        </div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th>代號</th><th>名稱</th><th>類別</th>
+          <th>庫存數量</th><th>現價</th><th>市值</th>
+          <th>成本金額</th><th>平均單價</th>
+          <th>手續費</th><th>交易稅</th><th>利息費用</th>
+          <th>未實現損益</th><th>報酬率</th>
+        </tr></thead>
+        <tbody id="ast-body"></tbody>
+        <tfoot id="ast-foot"></tfoot>
+      </table></div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MATCH ══ -->
 <div id="page-match" class="page">
   <div class="page-hdr"><div><div class="page-title">核對補充</div><div class="page-sub">手動修正配對失敗項目，補充利息/券費</div></div>
@@ -433,8 +481,8 @@ input[type=file]{display:none;}
 
 <!-- ══ IMPORT ══ -->
 <div id="page-import" class="page">
-  <div class="page-hdr"><div><div class="page-title">匯入資料</div><div class="page-sub">上傳交易明細與已實現損益表</div></div></div>
-  <div class="notice"><b>① 交易明細</b>：券商匯出原始明細，需含「融資券利息」「融券手續費」欄位<br/><b>② 已實現損益表</b>：券商提供的已實現 xlsx（盈虧欄已扣完手續費/稅/利息）<br/>以 <b>股票代號 + 賣出日期 + 賣價</b> 自動配對，失敗的到「核對補充」手動修正</div>
+  <div class="page-hdr"><div><div class="page-title">匯入資料</div><div class="page-sub">上傳交易明細、已實現損益表、未實現損益表</div></div></div>
+  <div class="notice"><b>① 交易明細</b>：券商匯出原始明細，需含「融資券利息」「融券手續費」欄位<br/><b>② 已實現損益表</b>：券商提供的已實現 xlsx（盈虧欄已扣完手續費/稅/利息）<br/><b>③ 未實現損益表</b>：每次匯出為一份快照，選擇快照日期後匯入，可保留多份歷史快照<br/>以 <b>股票代號 + 賣出日期 + 賣價</b> 自動配對，失敗的到「核對補充」手動修正</div>
   <div class="upload-grid">
     <div class="uc"><div class="uc-hdr"><div class="uc-num">1</div><h3>交易明細</h3></div>
       <div class="uc-desc">需含：成交日期、代號、名稱、買/賣、單價、交易類別、融資券利息、融券手續費</div>
@@ -446,6 +494,20 @@ input[type=file]{display:none;}
       <div class="dz" id="dz-p" onclick="document.getElementById('fi-p').click()" ondragover="dov(event,'dz-p')" ondragleave="dlv('dz-p')" ondrop="ddr(event,'p')">
         <div class="di">📋</div><p id="lbl-p">拖放或點擊上傳 xlsx / csv</p></div>
       <input type="file" id="fi-p" accept=".xlsx,.csv,.xls" onchange="hf(event,'p')"/></div>
+  </div>
+  <!-- 未實現損益匯入 -->
+  <div class="uc" style="margin-bottom:14px;">
+    <div class="uc-hdr"><div class="uc-num">3</div><h3>未實現損益表（持倉快照）</h3></div>
+    <div class="uc-desc">每次從券商匯出的未實現損益 xlsx，代表當天的持倉狀況。<br/>欄位需含：代號、名稱、交易類別、庫存數量、現價、市值、成本金額、平均單價、手續費、交易稅、利息費用、損益、報酬率</div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+      <label style="font-size:12px;color:var(--muted);font-weight:500;">快照日期（此份資料的日期）：</label>
+      <input type="date" id="ur-date" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 9px;border-radius:var(--r-sm);font-size:13px;font-family:var(--mono);"/>
+      <button class="btn btn-outline btn-sm" onclick="setUrDateToday()">今天</button>
+    </div>
+    <div class="dz" id="dz-ur" onclick="document.getElementById('fi-ur').click()" ondragover="dov(event,'dz-ur')" ondragleave="dlv('dz-ur')" ondrop="ddr(event,'ur')">
+      <div class="di">📊</div><p id="lbl-ur">拖放或點擊上傳未實現 xlsx</p></div>
+    <input type="file" id="fi-ur" accept=".xlsx,.csv,.xls" onchange="hf(event,'ur')"/>
+    <div id="ur-snap-list" style="margin-top:10px;font-size:12px;color:var(--muted);"></div>
   </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;">
     <button class="btn btn-primary" id="btn-run" onclick="runMatch()" disabled>🔗 開始核對匯入</button>
@@ -487,20 +549,29 @@ input[type=file]{display:none;}
 // STATE
 // ═══════════════════════════════════════════════
 let tradesRaw=[],pnlRaw=[],matchedRows=[],userEdits={};
+let urSnaps={};  // { 'YYYY-MM-DD': [rows...] }
 let allMonths=[],selectedMonths=new Set();
 let currentPage='overview',modalKey=null,modalCands=[],selCands=new Set();
 let currentAcct='A';
 const charts={};
 
 function lsKey(k){return `spx_${currentAcct}_${k}`;}
-function LS(){return {t:lsKey('t'),p:lsKey('p'),e:lsKey('e'),m:lsKey('m')};}
+function LS(){return {t:lsKey('t'),p:lsKey('p'),e:lsKey('e'),m:lsKey('m'),ur:lsKey('ur')};}
 
 window.onload=()=>{
-  // restore last used account
   try{currentAcct=localStorage.getItem('spx_acct')||'元大音';}catch(e){}
+  // set today's date for unrealized import
+  setUrDateToday();
   updateAcctUI();
   loadAcct();
 };
+
+function setUrDateToday(){
+  const d=new Date();
+  const s=d.toISOString().slice(0,10);
+  const el=document.getElementById('ur-date');
+  if(el&&!el.value)el.value=s;
+}
 
 function switchAcct(acct){
   if(acct===currentAcct)return;
@@ -517,26 +588,28 @@ function updateAcctUI(){
 }
 
 function loadAcct(){
-  // reset runtime state
-  tradesRaw=[];pnlRaw=[];matchedRows=[];userEdits={};
+  tradesRaw=[];pnlRaw=[];matchedRows=[];userEdits={};urSnaps={};
   allMonths=[];selectedMonths=new Set();
-  // reset UI
-  ['dz-t','dz-p'].forEach(id=>document.getElementById(id).classList.remove('loaded'));
+  ['dz-t','dz-p','dz-ur'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('loaded');});
   document.getElementById('lbl-t').textContent='拖放或點擊上傳 xlsx / csv';
   document.getElementById('lbl-p').textContent='拖放或點擊上傳 xlsx / csv';
+  document.getElementById('lbl-ur').textContent='拖放或點擊上傳未實現 xlsx';
   document.getElementById('sb-months').innerHTML='';
   document.getElementById('hdr-chips').innerHTML='';
   document.getElementById('hdr-pnl').className='hdr-pnl neu';
   document.getElementById('hdr-pnl').textContent='尚無資料';
-  // load from localStorage
   const ls=LS();
   try{tradesRaw=JSON.parse(localStorage.getItem(ls.t)||'[]');}catch(e){}
   try{pnlRaw   =JSON.parse(localStorage.getItem(ls.p)||'[]');}catch(e){}
   try{userEdits=JSON.parse(localStorage.getItem(ls.e)||'{}');}catch(e){}
   try{const sm=JSON.parse(localStorage.getItem(ls.m)||'[]');selectedMonths=new Set(sm);}catch(e){}
+  try{urSnaps  =JSON.parse(localStorage.getItem(ls.ur)||'{}');}catch(e){}
   if(tradesRaw.length)setLoaded('dz-t','lbl-t',`✓ 交易明細 ${tradesRaw.length} 筆`);
   if(pnlRaw.length)   setLoaded('dz-p','lbl-p',`✓ 已實現損益 ${pnlRaw.length} 筆`);
+  const urDates=Object.keys(urSnaps).sort((a,b)=>b.localeCompare(a));
+  if(urDates.length)  setLoaded('dz-ur','lbl-ur',`✓ 未實現快照 ${urDates.length} 份`);
   updBtn();
+  updateUrSnapList();
   if(tradesRaw.length&&pnlRaw.length)runMatch(false);
   else nav('overview');
 }
@@ -550,7 +623,7 @@ function nav(page){
   document.querySelectorAll('.sb-nav-item').forEach(el=>el.classList.remove('active'));
   const pg=document.getElementById('page-'+page);if(pg)pg.classList.add('active');
   const sb=document.getElementById('sbn-'+page);if(sb)sb.classList.add('active');
-  const rmap={overview:renderOverview,compare:renderCompare,stocks:renderStocks,daytrade:renderDaytrade,margin:renderMargin,cost:renderCost,match:renderMatch};
+  const rmap={overview:renderOverview,assets:renderAssets,compare:renderCompare,stocks:renderStocks,daytrade:renderDaytrade,margin:renderMargin,cost:renderCost,match:renderMatch};
   if(rmap[page])rmap[page]();
 }
 
@@ -643,16 +716,13 @@ function parseFile(file,which){
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:true});
       if(which==='t'){
-        // 交易明細：覆蓋（每次匯出都是完整明細）
         tradesRaw=normT(rows);
         localStorage.setItem(LS().t,JSON.stringify(tradesRaw));
         setLoaded('dz-t','lbl-t',`✓ 交易明細 ${tradesRaw.length} 筆`);
         addLog(`✅ 交易明細：${tradesRaw.length} 筆`);
-      } else {
-        // 已實現損益：累積合併，用「委託書號（賣）+ 委託書號（買）」去重
+      } else if(which==='p'){
         const incoming=normP(rows);
         const existing=pnlRaw;
-        // build dedup key set from existing
         const existKeys=new Set(existing.map(r=>r._dupKey));
         const newRows=incoming.filter(r=>!existKeys.has(r._dupKey));
         pnlRaw=[...existing,...newRows];
@@ -662,6 +732,19 @@ function parseFile(file,which){
           :`⚠️ 已實現損益：${incoming.length} 筆全部已存在，無新增（累計 ${pnlRaw.length} 筆）`;
         setLoaded('dz-p','lbl-p',`✓ 已實現損益 ${pnlRaw.length} 筆（累計）`);
         addLog(msg);
+      } else if(which==='ur'){
+        const snapDate=document.getElementById('ur-date')?.value;
+        if(!snapDate){toast('請先選擇快照日期');return;}
+        const snapRows=normUR(rows);
+        if(!snapRows.length){addLog('❌ 未實現損益：解析失敗，找不到有效資料');return;}
+        urSnaps[snapDate]=snapRows;
+        try{localStorage.setItem(LS().ur,JSON.stringify(urSnaps));}catch(e){addLog('⚠️ 快照儲存失敗（localStorage 已滿）');}
+        const cnt=Object.keys(urSnaps).length;
+        setLoaded('dz-ur','lbl-ur',`✓ 未實現快照 ${cnt} 份`);
+        addLog(`✅ 未實現損益快照 [${snapDate}]：${snapRows.length} 筆`);
+        updateUrSnapList();
+        // 如果目前在資產頁面，刷新
+        if(currentPage==='assets')renderAssets();
       }
       updBtn();
     }catch(err){addLog('❌ '+err.message);console.error(err);}
@@ -719,7 +802,63 @@ function normP(rows){
   }
   return out;
 }
-function ed(v){if(!v&&v!==0)return '';const s=String(v).trim();if(!s)return '';if(/^\d{4}[\/\-]\d{2}[\/\-]\d{2}/.test(s))return s.replace(/\//g,'-').slice(0,10);const n=parseFloat(s);if(!isNaN(n)&&n>40000&&n<60000)return new Date(Math.round((n-25569)*86400*1000)).toISOString().slice(0,10);return s;}
+// ── Normalize unrealized P&L snapshot ────────────────────────────────────────
+function normUR(rows){
+  const out=[];
+  for(const r of rows){
+    // rows[0] is header row 1 (明細/股票/交易/庫存數量...), rows[1] is header row 2 (代號/名稱/類別...)
+    // actual data starts at row index 2
+    const code=String(r['代號']||r['股票']||'').replace(/\s/g,'').trim();
+    if(!code||code.length<4||isNaN(code[0]))continue; // skip non-stock rows
+    const pnlStr=String(r['損益']||'');
+    const roiStr=String(r['報酬率']||'');
+    const mktStr=String(r['市值']||'');
+    if(!mktStr&&!pnlStr)continue;
+    // Parse numeric fields - handle +/- prefix and comma separators
+    const parseNum=v=>{if(!v&&v!==0)return 0;const s=String(v).replace(/,/g,'').replace(/\s/g,'');return parseFloat(s)||0;};
+    const parseRate=v=>{if(!v)return null;const s=String(v).replace('%','').trim();return parseFloat(s)||null;};
+    out.push({
+      code,
+      name    : String(r['名稱']||'').trim(),
+      cat     : String(r['交易類別']||r['類別']||'現股').trim()||'現股',
+      qty     : parseNum(r['庫存數量']),
+      price   : parseNum(r['現價']),
+      mktVal  : parseNum(r['市值']),
+      cost    : parseNum(r['成本金額']),
+      avgPrice: parseNum(r['平均單價']),
+      fee     : parseNum(r['手續費']),
+      tax     : parseNum(r['交易稅']),
+      interest: parseNum(r['利息']||r['利息\n費用']||0),
+      pnl     : parseNum(pnlStr),
+      roi     : parseRate(roiStr),
+    });
+  }
+  return out;
+}
+
+function updateUrSnapList(){
+  const el=document.getElementById('ur-snap-list');
+  if(!el)return;
+  const dates=Object.keys(urSnaps).sort((a,b)=>b.localeCompare(a));
+  if(!dates.length){el.innerHTML='';return;}
+  el.innerHTML='<div style="margin-bottom:4px;font-weight:500;">已儲存快照：</div>'+dates.map(d=>`
+    <span style="display:inline-flex;align-items:center;gap:5px;margin:2px 4px 2px 0;background:var(--bg3);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-family:var(--mono);font-size:11px;">
+      ${d} (${urSnaps[d].length}筆)
+      <span onclick="deleteSnap('${d}')" style="cursor:pointer;color:var(--red);font-size:13px;line-height:1;" title="刪除此快照">×</span>
+    </span>`).join('');
+}
+
+function deleteSnap(date){
+  if(!confirm(`確定刪除 ${date} 的快照？`))return;
+  delete urSnaps[date];
+  try{localStorage.setItem(LS().ur,JSON.stringify(urSnaps));}catch(e){}
+  const cnt=Object.keys(urSnaps).length;
+  if(cnt)setLoaded('dz-ur','lbl-ur',`✓ 未實現快照 ${cnt} 份`);
+  else{document.getElementById('dz-ur').classList.remove('loaded');document.getElementById('lbl-ur').textContent='拖放或點擊上傳未實現 xlsx';}
+  updateUrSnapList();
+  if(currentPage==='assets')renderAssets();
+  toast(`已刪除 ${date} 快照`);
+}if(!v&&v!==0)return '';const s=String(v).trim();if(!s)return '';if(/^\d{4}[\/\-]\d{2}[\/\-]\d{2}/.test(s))return s.replace(/\//g,'-').slice(0,10);const n=parseFloat(s);if(!isNaN(n)&&n>40000&&n<60000)return new Date(Math.round((n-25569)*86400*1000)).toISOString().slice(0,10);return s;}
 function nd(s){if(!s)return '';s=String(s).trim();if(/^\d{4}[\/\-]\d{2}[\/\-]\d{2}/.test(s))return s.replace(/\//g,'-').slice(0,10);return ed(s);}
 function pn(v){if(v===null||v===undefined||v==='')return 0;return parseFloat(String(v).replace(/,/g,''))||0;}
 function pk(p){return Math.round(parseFloat(p)*100);}
@@ -776,6 +915,126 @@ function runMatch(showToast=true){
   document.getElementById('badge-stocks').textContent=[...new Set(matchedRows.map(r=>r.code))].length;
   nav(currentPage==='import'?'overview':currentPage);
   if(showToast)toast(`資料載入完成，共 ${matchedRows.length} 筆`);
+}
+
+// ═══════════════════════════════════════════════
+// RENDER — ASSETS
+// ═══════════════════════════════════════════════
+function renderAssets(){
+  const dates=Object.keys(urSnaps).sort((a,b)=>b.localeCompare(a));
+  if(!dates.length){
+    document.getElementById('ast-empty').style.display='';
+    document.getElementById('ast-content').style.display='none';
+    return;
+  }
+  document.getElementById('ast-empty').style.display='none';
+  document.getElementById('ast-content').style.display='block';
+  const sel=document.getElementById('ast-date-sel');
+  const curDate=sel.value&&dates.includes(sel.value)?sel.value:dates[0];
+  sel.innerHTML=dates.map(d=>`<option value="${d}">${d}</option>`).join('');
+  sel.value=curDate;
+  const rows=urSnaps[curDate]||[];
+  document.getElementById('ast-snap-info').textContent=`共 ${rows.length} 筆持倉`;
+
+  const totMkt =rows.reduce((s,r)=>s+r.mktVal,0);
+  const totCost=rows.reduce((s,r)=>s+r.cost,0);
+  const totPnl =rows.reduce((s,r)=>s+r.pnl,0);
+  const totFee =rows.reduce((s,r)=>s+r.fee+r.tax,0);
+  const totInt =rows.reduce((s,r)=>s+r.interest,0);
+  const mgRows =rows.filter(r=>r.cat==='融資');
+  const mgCost =mgRows.reduce((s,r)=>s+r.cost,0);
+  const mgLoan =mgCost*0.6; // 融資約借6成
+  const netAst =totMkt-mgLoan;
+  const realNet=matchedRows.filter(r=>r.fSt!=='skip').reduce((s,r)=>s+r.netPnl,0);
+
+  document.getElementById('ast-cards').innerHTML=`
+    <div class="card c-blue"><div class="lbl">持倉總市值</div><div class="val blue">${fmtN(totMkt)}</div><div class="sub">${rows.length} 支股票</div></div>
+    <div class="card c-gray"><div class="lbl">持倉總成本</div><div class="val" style="color:var(--muted);">${fmtN(totCost)}</div></div>
+    <div class="card ${totPnl>=0?'c-green':'c-red'}"><div class="lbl">未實現損益</div><div class="val ${totPnl>=0?'pos':'neg'}">${fmt(totPnl)}</div></div>
+    <div class="card c-orange"><div class="lbl">手續費＋稅（持倉）</div><div class="val orange">${fmtN(totFee)}</div></div>
+    <div class="card c-purple"><div class="lbl">融資部位成本</div><div class="val purple">${mgRows.length?fmtN(mgCost):'-'}</div><div class="sub">估計融資借款 ${mgRows.length?fmtN(mgLoan):'-'}</div></div>
+    <div class="card ${netAst>=0?'c-teal':'c-red'}"><div class="lbl">淨資產（扣融資）</div><div class="val ${netAst>=0?'teal':'neg'}">${fmtN(netAst)}</div><div class="sub">市值 − 估計融資借款</div></div>
+    <div class="card ${realNet>=0?'c-green':'c-red'}"><div class="lbl">已實現損益（累計）</div><div class="val ${realNet>=0?'pos':'neg'}">${fmt(realNet)}</div></div>`;
+
+  const top10=[...rows].sort((a,b)=>b.mktVal-a.mktVal).slice(0,10);
+  drawPie('ch-ast-pie',top10.map(r=>r.code),top10.map(r=>r.mktVal));
+  const sorted=[...rows].sort((a,b)=>b.pnl-a.pnl);
+  drawBar('ch-ast-bar',sorted.map(r=>r.code),sorted.map(r=>r.pnl),'未實現損益');
+  renderAssetsTable();
+}
+
+function renderAssetsTable(){
+  const sel=document.getElementById('ast-date-sel');
+  const curDate=sel?.value;if(!curDate)return;
+  const typeF=document.getElementById('ast-type-f')?.value||'';
+  const rows=[...(urSnaps[curDate]||[])].filter(r=>!typeF||r.cat===typeF).sort((a,b)=>b.pnl-a.pnl);
+  document.getElementById('ast-count').textContent=`${rows.length} 筆`;
+  const totMkt=rows.reduce((s,r)=>s+r.mktVal,0);
+  const totCost=rows.reduce((s,r)=>s+r.cost,0);
+  const totPnl=rows.reduce((s,r)=>s+r.pnl,0);
+  const totFee=rows.reduce((s,r)=>s+r.fee,0);
+  const totTax=rows.reduce((s,r)=>s+r.tax,0);
+  const totInt=rows.reduce((s,r)=>s+r.interest,0);
+
+  document.getElementById('ast-body').innerHTML=rows.map(r=>`<tr>
+    <td class="mono" style="font-weight:700;">${r.code}</td>
+    <td style="white-space:nowrap;">${r.name}</td>
+    <td><span class="tag tag-${r.cat}">${r.cat}</span></td>
+    <td class="r">${r.qty>=1000?(r.qty/1000).toFixed(0)+'張':r.qty}</td>
+    <td class="r mono">${r.price.toLocaleString('zh-TW')}</td>
+    <td class="r mono" style="font-weight:600;">${fmtN(r.mktVal)}</td>
+    <td class="r mono">${r.cost?fmtN(r.cost):'-'}</td>
+    <td class="r mono">${r.avgPrice?r.avgPrice.toFixed(2):'-'}</td>
+    <td class="r mono">${r.fee?fmtN(r.fee):'-'}</td>
+    <td class="r mono">${r.tax?fmtN(r.tax):'-'}</td>
+    <td class="r mono ${r.interest?'orange':''}">${r.interest?fmtN(r.interest):'-'}</td>
+    <td class="r ${r.pnl>=0?'pos':'neg'}" style="font-weight:700;font-size:13px;">${fmt(r.pnl)}</td>
+    <td class="r ${r.pnl>=0?'pos':'neg'}">${r.roi!==null?r.roi.toFixed(2)+'%':'-'}</td>
+  </tr>`).join('');
+
+  document.getElementById('ast-foot').innerHTML=`<tr class="tot">
+    <td colspan="5" style="text-align:right;color:var(--muted);font-size:10px;">合計</td>
+    <td class="r mono">${fmtN(totMkt)}</td>
+    <td class="r mono">${fmtN(totCost)}</td>
+    <td></td>
+    <td class="r mono">${fmtN(totFee)}</td>
+    <td class="r mono">${fmtN(totTax)}</td>
+    <td class="r mono orange">${totInt?fmtN(totInt):'-'}</td>
+    <td class="r ${totPnl>=0?'pos':'neg'}" style="font-size:13px;">${fmt(totPnl)}</td>
+    <td></td>
+  </tr>`;
+}
+
+function exportAssets(){
+  const sel=document.getElementById('ast-date-sel');
+  const curDate=sel?.value;if(!curDate)return;
+  const rows=urSnaps[curDate]||[];
+  const csv=[['快照日期',curDate],['代號','名稱','類別','庫存數量','現價','市值','成本金額','平均單價','手續費','交易稅','利息','未實現損益','報酬率%'],
+    ...rows.map(r=>[r.code,r.name,r.cat,r.qty,r.price,r.mktVal,r.cost,r.avgPrice,r.fee,r.tax,r.interest,r.pnl,r.roi??''])
+  ].map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`持倉快照_${curDate}.csv`;a.click();
+}
+
+function updateUrSnapList(){
+  const el=document.getElementById('ur-snap-list');if(!el)return;
+  const dates=Object.keys(urSnaps).sort((a,b)=>b.localeCompare(a));
+  if(!dates.length){el.innerHTML='';return;}
+  el.innerHTML='<div style="margin-bottom:5px;font-weight:500;font-size:12px;">已儲存快照：</div>'+
+    dates.map(d=>`<span style="display:inline-flex;align-items:center;gap:5px;margin:2px 4px 2px 0;background:var(--bg3);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-family:var(--mono);font-size:11px;">${d}（${urSnaps[d].length}筆）<span onclick="deleteSnap('${d}')" style="cursor:pointer;color:var(--red);font-size:13px;" title="刪除">×</span></span>`).join('');
+}
+
+function deleteSnap(date){
+  if(!confirm(`確定刪除 ${date} 的快照？`))return;
+  delete urSnaps[date];
+  try{localStorage.setItem(LS().ur,JSON.stringify(urSnaps));}catch(e){}
+  const cnt=Object.keys(urSnaps).length;
+  if(cnt)setLoaded('dz-ur','lbl-ur',`✓ 未實現快照 ${cnt} 份`);
+  else{document.getElementById('dz-ur').classList.remove('loaded');document.getElementById('lbl-ur').textContent='拖放或點擊上傳未實現 xlsx';}
+  updateUrSnapList();
+  if(currentPage==='assets')renderAssets();
+  toast(`已刪除 ${date} 快照`);
 }
 
 // ═══════════════════════════════════════════════
@@ -1369,9 +1628,9 @@ function clearPnl(){
 }
 function clearAll(){
   if(!confirm(`確定清除帳戶 ${currentAcct} 的所有資料？`))return;
-  tradesRaw=[];pnlRaw=[];matchedRows=[];userEdits={};allMonths=[];selectedMonths=new Set();
+  tradesRaw=[];pnlRaw=[];matchedRows=[];userEdits={};allMonths=[];selectedMonths=new Set();urSnaps={};
   const ls=LS();
-  [ls.t,ls.p,ls.e,ls.m].forEach(k=>localStorage.removeItem(k));
+  [ls.t,ls.p,ls.e,ls.m,ls.ur].forEach(k=>localStorage.removeItem(k));
   ['dz-t','dz-p'].forEach(id=>document.getElementById(id).classList.remove('loaded'));
   document.getElementById('lbl-t').textContent='拖放或點擊上傳 xlsx / csv';
   document.getElementById('lbl-p').textContent='拖放或點擊上傳 xlsx / csv';
