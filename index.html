@@ -121,10 +121,9 @@ canvas{width:100%!important;max-height:220px;}
 .tw{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
 thead{background:var(--bg3);}
-th{padding:8px 12px;text-align:left;font-weight:600;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;border-bottom:1px solid var(--border);}
-th.r{text-align:right;}
-td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
-td.r{text-align:right;font-family:var(--mono);}
+th{padding:8px 12px;text-align:center;font-weight:600;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;border-bottom:1px solid var(--border);}
+th.r{text-align:center;}td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle;text-align:center;}
+td.r{text-align:center;font-family:var(--mono);}
 tbody tr:last-child td{border-bottom:none;}
 tbody tr:hover td{background:var(--bg3);}
 .mono{font-family:var(--mono);}
@@ -1092,9 +1091,9 @@ function renderMatch(){
       <div class="tw"><table>
         <thead><tr>
           <th>代號</th><th>名稱</th>
-          <th>賣出日期</th><th>委託書號</th><th>類別</th><th class="r">賣價</th>
-          <th>買入日期</th><th>委託書號</th><th>類別</th><th class="r">買價</th>
-          <th class="r">數量</th><th class="r">沖銷原始成本</th>
+          <th>賣出日期</th><th style="display:none;">委託書號</th><th>類別</th><th class="r">賣價</th>
+          <th>買入日期</th><th style="display:none;">委託書號</th><th>類別</th><th class="r">買價</th>
+          <th class="r">數量</th><th style="display:none;">沖銷原始成本</th>
           <th class="r">手續費</th><th class="r">交易稅</th>
           <th class="r">融資券利息<br/><span style="color:var(--orange);font-weight:400;font-size:9px;">來自明細</span></th>
           <th class="r">融券手續費<br/><span style="color:var(--orange);font-weight:400;font-size:9px;">來自明細</span></th>
@@ -1115,15 +1114,15 @@ function renderMatch(){
             <td class="mono" style="font-weight:700;">${r.code}</td>
             <td style="white-space:nowrap;">${r.name}</td>
             <td class="mono">${r.sellDate||'-'}</td>
-            <td class="mono" style="color:var(--muted);font-size:11px;">${r.sellOrder||'-'}</td>
+            <td style="display:none;" class="mono">${r.sellOrder||'-'}</td>
             <td>${r.catSell?`<span class="tag tag-${r.catSell}">${r.catSell}</span>`:'-'}</td>
             <td class="r mono">${r.sellPrice||'-'}</td>
             <td class="mono">${r.buyDate||'-'}</td>
-            <td class="mono" style="color:var(--muted);font-size:11px;">${r.buyOrder||'-'}</td>
+            <td style="display:none;" class="mono">${r.buyOrder||'-'}</td>
             <td>${r.catBuy?`<span class="tag tag-${r.catBuy}">${r.catBuy}</span>`:'-'}</td>
             <td class="r mono">${r.buyPrice||'-'}</td>
             <td class="r">${qty}</td>
-            <td class="r mono" style="color:var(--muted);">${r.costBase?fmtN(r.costBase):'-'}</td>
+            <td style="display:none;" class="r mono">${r.costBase?fmtN(r.costBase):'-'}</td>
             <td class="r mono">${r.fee?fmtN(r.fee):'-'}</td>
             <td class="r mono">${r.tax?fmtN(r.tax):'-'}</td>
             <td class="r">${iShow}</td>
@@ -1153,7 +1152,7 @@ function renderMatch(){
           </tr>`;
         }).join('')}
         <tr class="tot">
-          <td colspan="12" style="text-align:right;font-size:10px;color:var(--muted);">月合計</td>
+          <td colspan="9" style="text-align:right;font-size:10px;color:var(--muted);">月合計</td>
           <td class="r mono">${fmtN(totFee)}</td>
           <td class="r mono">${fmtN(totTax)}</td>
           <td class="r ${totInt?'orange':''}">
