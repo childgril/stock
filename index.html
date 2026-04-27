@@ -49,7 +49,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 
 /* ── SIDEBAR ── */
 .sb{width:var(--sb);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto;flex-shrink:0;}
-.sb-top{padding:12px;border-bottom:1px solid var(--border);background:var(--bg3);}
+.sb-top{padding:12px;border-top:1px solid var(--border);background:var(--bg3);}
 .sb-top-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
 .sb-top-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;flex:1;}
 .sb-top-btns{display:flex;gap:4px;}
@@ -281,18 +281,6 @@ input[type=file]{display:none;}
 <div class="shell">
 <!-- SIDEBAR -->
 <div class="sb">
-  <div class="sb-top">
-    <div class="sb-top-row">
-      <div class="sb-top-label">選擇月份</div>
-      <div class="sb-top-btns">
-        <button class="sb-btn" onclick="selAll()">全選</button>
-        <button class="sb-btn" onclick="selNone()">清除</button>
-      </div>
-    </div>
-    <input class="sb-search" id="sb-search" placeholder="搜尋月份…" oninput="filterMonths()"/>
-  </div>
-  <div class="sb-months" id="sb-months"></div>
-  <div class="sb-divider"></div>
   <div class="sb-nav">
     <div class="sb-nav-item active" onclick="nav('overview')" id="sbn-overview"><span class="ico">🏠</span>總覽</div>
     <div class="sb-nav-item" onclick="nav('stocks')" id="sbn-stocks"><span class="ico">📊</span>個股統計<span class="sb-badge" id="badge-stocks">0</span></div>
@@ -304,6 +292,18 @@ input[type=file]{display:none;}
     <div class="sb-nav-item" onclick="nav('match')" id="sbn-match"><span class="ico">🔗</span>核對補充<span class="sb-badge warn" id="badge-match" style="display:none;">!</span></div>
     <div class="sb-nav-item" onclick="nav('import')" id="sbn-import"><span class="ico">📤</span>匯入資料</div>
   </div>
+  <div class="sb-divider"></div>
+  <div class="sb-top">
+    <div class="sb-top-row">
+      <div class="sb-top-label">選擇月份</div>
+      <div class="sb-top-btns">
+        <button class="sb-btn" onclick="selAll()">全選</button>
+        <button class="sb-btn" onclick="selNone()">清除</button>
+      </div>
+    </div>
+    <input class="sb-search" id="sb-search" placeholder="搜尋月份…" oninput="filterMonths()"/>
+  </div>
+  <div class="sb-months" id="sb-months"></div>
 </div>
 
 <!-- MAIN -->
