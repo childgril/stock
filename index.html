@@ -803,39 +803,66 @@ function normP(rows){
   return out;
 }
 // ── Normalize unrealized P&L snapshot ────────────────────────────────────────
+// 券商匯出的 xlsx 常見雙列合併標頭：
+//   第 1 列： 明細 | 股票       | 交易  | 庫存數量 | ... | 利息  | ...
+//   第 2 列：      | 代號 | 名稱 | 類別 |          | ... | 費用  | ...
+// XLSX 用第 1 列當 key，被合併欄位下方的 cell 變成 __EMPTY/__EMPTY_1...，
+// 因此「名稱」「類別」可能要從 __EMPTY 取得。改用首列實際文字 (e.g. '名稱')
+// 動態偵測對應 key，以避免欄位順序變動就抓不到。
 function normUR(rows){
   const out=[];
+  if(!rows.length)return out;
+  const allKeys=Object.keys(rows[0]||{});
+  const findKey=(label,...fallbacks)=>{
+    if(allKeys.includes(label))return label;
+    for(let i=0;i<Math.min(rows.length,3);i++){
+      for(const k of allKeys){
+        if(String(rows[i][k]||'').trim()===label)return k;
+      }
+    }
+    for(const f of fallbacks){if(allKeys.includes(f))return f;}
+    return label;
+  };
+  const kCode    =findKey('代號','股票代號','股票');
+  const kName    =findKey('名稱','股票名稱','商品名稱');
+  const kCat     =findKey('類別','交易類別','交易');
+  const kQty     =findKey('庫存數量','數量');
+  const kPrice   =findKey('現價','市價');
+  const kMkt     =findKey('市值');
+  const kCost    =findKey('成本金額','成本');
+  const kAvg     =findKey('平均單價','均價');
+  const kFee     =findKey('手續費');
+  const kTax     =findKey('交易稅');
+  const kInterest=findKey('利息費用','利息','利息\n費用');
+  const kPnl     =findKey('損益','未實現損益');
+  const kRoi     =findKey('報酬率','報酬率%');
   for(const r of rows){
-    // rows[0] is header row 1 (明細/股票/交易/庫存數量...), rows[1] is header row 2 (代號/名稱/類別...)
-    // actual data starts at row index 2
-    const code=String(r['代號']||r['股票']||'').replace(/\s/g,'').trim();
-    if(!code||code.length<4||isNaN(code[0]))continue; // skip non-stock rows
-    const pnlStr=String(r['損益']||'');
-    const roiStr=String(r['報酬率']||'');
-    const mktStr=String(r['市值']||'');
+    const code=String(r[kCode]||'').replace(/\s/g,'').trim();
+    if(!code||code.length<4||isNaN(code[0]))continue;
+    const pnlStr=String(r[kPnl]||'');
+    const roiStr=String(r[kRoi]||'');
+    const mktStr=String(r[kMkt]||'');
     if(!mktStr&&!pnlStr)continue;
-    // Parse numeric fields - handle +/- prefix and comma separators
     const parseNum=v=>{if(!v&&v!==0)return 0;const s=String(v).replace(/,/g,'').replace(/\s/g,'');return parseFloat(s)||0;};
     const parseRate=v=>{if(!v)return null;const s=String(v).replace('%','').trim();return parseFloat(s)||null;};
     out.push({
       code,
-      name    : String(r['名稱']||'').trim(),
-      cat     : String(r['交易類別']||r['類別']||'現股').trim()||'現股',
-      qty     : parseNum(r['庫存數量']),
-      price   : parseNum(r['現價']),
-      mktVal  : parseNum(r['市值']),
-      cost    : parseNum(r['成本金額']),
-      avgPrice: parseNum(r['平均單價']),
-      fee     : parseNum(r['手續費']),
-      tax     : parseNum(r['交易稅']),
-      interest: parseNum(r['利息']||r['利息\n費用']||0),
+      name    : String(r[kName]||'').trim(),
+      cat     : String(r[kCat]||'現股').trim()||'現股',
+      qty     : parseNum(r[kQty]),
+      price   : parseNum(r[kPrice]),
+      mktVal  : parseNum(r[kMkt]),
+      cost    : parseNum(r[kCost]),
+      avgPrice: parseNum(r[kAvg]),
+      fee     : parseNum(r[kFee]),
+      tax     : parseNum(r[kTax]),
+      interest: parseNum(r[kInterest]),
       pnl     : parseNum(pnlStr),
       roi     : parseRate(roiStr),
     });
   }
   return out;
 }
-
 function updateUrSnapList(){
   const el=document.getElementById('ur-snap-list');
   if(!el)return;
