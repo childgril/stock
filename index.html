@@ -722,21 +722,31 @@ function parseFile(file,which){
       const rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:true});
       if(which==='t'){
         tradesRaw=normT(rows);
-        localStorage.setItem(LS().t,JSON.stringify(tradesRaw));
-        setLoaded('dz-t','lbl-t',`✓ 交易明細 ${tradesRaw.length} 筆`);
-        addLog(`✅ 交易明細：${tradesRaw.length} 筆`);
+        if(!tradesRaw.length){
+          setEmpty('dz-t','lbl-t','⚠️ 交易明細：抓不到資料，請確認檔案格式');
+          addLog(`❌ 交易明細：解析後 0 筆。請確認檔案含「成交日期」「股票代號」「買/賣」等欄位（檔案欄位：${headerHint(rows)}）`);
+        }else{
+          localStorage.setItem(LS().t,JSON.stringify(tradesRaw));
+          setLoaded('dz-t','lbl-t',`✓ 交易明細 ${tradesRaw.length} 筆`);
+          addLog(`✅ 交易明細：${tradesRaw.length} 筆`);
+        }
       } else if(which==='p'){
         const incoming=normP(rows);
-        const existing=pnlRaw;
-        const existKeys=new Set(existing.map(r=>r._dupKey));
-        const newRows=incoming.filter(r=>!existKeys.has(r._dupKey));
-        pnlRaw=[...existing,...newRows];
-        localStorage.setItem(LS().p,JSON.stringify(pnlRaw));
-        const msg=newRows.length>0
-          ?`✅ 已實現損益：新增 ${newRows.length} 筆（略過重複 ${incoming.length-newRows.length} 筆），累計 ${pnlRaw.length} 筆`
-          :`⚠️ 已實現損益：${incoming.length} 筆全部已存在，無新增（累計 ${pnlRaw.length} 筆）`;
-        setLoaded('dz-p','lbl-p',`✓ 已實現損益 ${pnlRaw.length} 筆（累計）`);
-        addLog(msg);
+        if(!incoming.length){
+          setEmpty('dz-p','lbl-p',pnlRaw.length?`✓ 已實現損益 ${pnlRaw.length} 筆（累計）`:'⚠️ 已實現損益：抓不到資料，請確認檔案格式');
+          addLog(`❌ 已實現損益：解析後 0 筆。請確認檔案含「代號」「賣出日期」「買入日期」「盈虧」等欄位（檔案欄位：${headerHint(rows)}）`);
+        }else{
+          const existing=pnlRaw;
+          const existKeys=new Set(existing.map(r=>r._dupKey));
+          const newRows=incoming.filter(r=>!existKeys.has(r._dupKey));
+          pnlRaw=[...existing,...newRows];
+          localStorage.setItem(LS().p,JSON.stringify(pnlRaw));
+          const msg=newRows.length>0
+            ?`✅ 已實現損益：新增 ${newRows.length} 筆（略過重複 ${incoming.length-newRows.length} 筆），累計 ${pnlRaw.length} 筆`
+            :`⚠️ 已實現損益：${incoming.length} 筆全部已存在，無新增（累計 ${pnlRaw.length} 筆）`;
+          setLoaded('dz-p','lbl-p',`✓ 已實現損益 ${pnlRaw.length} 筆（累計）`);
+          addLog(msg);
+        }
       } else if(which==='ur'){
         const snapDate=document.getElementById('ur-date')?.value;
         if(!snapDate){toast('請先選擇快照日期');return;}
@@ -757,51 +767,108 @@ function parseFile(file,which){
   reader.readAsArrayBuffer(file);
 }
 function setLoaded(dz,lbl,txt){document.getElementById(dz).classList.add('loaded');document.getElementById(lbl).textContent=txt;}
+function setEmpty(dz,lbl,txt){const el=document.getElementById(dz);if(el)el.classList.remove('loaded');document.getElementById(lbl).textContent=txt;}
+function headerHint(rows){return Object.keys(rows[0]||{}).filter(k=>!/^__EMPTY/.test(k)).slice(0,8).join('、')||'(空白)';}
 function updBtn(){document.getElementById('btn-run').disabled=!(tradesRaw.length&&pnlRaw.length);}
 
 // ═══════════════════════════════════════════════
 // NORMALIZE
 // ═══════════════════════════════════════════════
+// 各家券商標頭可能有空白/換行/全形空白/「股票名稱」「證券名稱」之類變體，
+// 也可能有合併標頭（標頭文字落在第二列、第一列那欄變成 __EMPTY）。
+// makeFindKey 同時處理：1) 標頭直接比對 2) 前 3 列 cell 文字比對
+// 3) 標頭子字串 fallback 4) cell 子字串 fallback
+function makeFindKey(rows){
+  const allKeys=Object.keys(rows[0]||{});
+  const norm=s=>String(s||'').replace(/[\s　]/g,'');
+  return (...labels)=>{
+    const N=labels.map(norm).filter(Boolean);
+    for(const k of allKeys){if(N.includes(norm(k)))return k;}
+    for(let i=0;i<Math.min(rows.length,3);i++){
+      for(const k of allKeys){if(N.includes(norm(rows[i][k])))return k;}
+    }
+    for(const k of allKeys){
+      const nk=norm(k);
+      if(nk&&N.some(n=>nk.includes(n)))return k;
+    }
+    for(let i=0;i<Math.min(rows.length,3);i++){
+      for(const k of allKeys){
+        const nv=norm(rows[i][k]);
+        if(nv&&N.some(n=>nv.includes(n)))return k;
+      }
+    }
+    return null;
+  };
+}
 function normT(rows){
   const out=[];
+  if(!rows.length)return out;
+  const find=makeFindKey(rows);
+  const kDate    =find('成交日期','交易日期','日期');
+  const kCode    =find('股票代號','證券代號','代號','商品代號','股票');
+  const kName    =find('名稱','股票名稱','證券名稱','商品名稱');
+  const kBs      =find('買／賣','買/賣','買賣別','買賣','別');
+  const kPrice   =find('單價','成交價','價格');
+  const kQty     =find('成交數量','數量','股數');
+  const kFee     =find('手續費');
+  const kTax     =find('交易稅');
+  const kInterest=find('融資券利息','利息','融資利息');
+  const kSsf     =find('融券手續費','券費');
+  const kCat     =find('交易類別','類別','交易');
   for(const r of rows){
-    const dr=r['成交日期']||'';if(!dr||!/\d/.test(String(dr)))continue;
-    const code=String(r['股票代號']||'').replace(/\s/g,'');if(!code)continue;
-    const bs=String(r['買／賣']||r['買/賣']||'').trim();if(!bs)continue;
-    out.push({date:nd(String(dr)),code,name:String(r['名稱']||'').trim(),bs:bs==='買'?'B':'S',price:pn(r['單價']),qty:pn(r['成交數量']),fee:pn(r['手續費']),tax:pn(r['交易稅']),interest:pn(r['融資券利息']),ssf:pn(r['融券手續費']),cat:String(r['交易類別']||'').trim()});
+    const dr=r[kDate]||'';if(!dr||!/\d/.test(String(dr)))continue;
+    const code=String(r[kCode]||'').replace(/\s/g,'');if(!code)continue;
+    const bs=String(r[kBs]||'').trim();if(!bs)continue;
+    out.push({date:nd(String(dr)),code,name:String(r[kName]||'').trim(),bs:bs==='買'?'B':'S',price:pn(r[kPrice]),qty:pn(r[kQty]),fee:pn(r[kFee]),tax:pn(r[kTax]),interest:pn(r[kInterest]),ssf:pn(r[kSsf]),cat:String(r[kCat]||'').trim()});
   }
   return out;
 }
 function normP(rows){
   const out=[];
+  if(!rows.length)return out;
+  const find=makeFindKey(rows);
+  const allKeys=Object.keys(rows[0]||{});
+  const kCode    =find('代號','股票代號','證券代號','商品代號');
+  const kName    =find('名稱','股票名稱','證券名稱','商品名稱');
+  const kSellDate=find('賣出日期','賣出日','賣日');
+  const kBuyDate =find('買入日期','買入日','買日');
+  const kSellPrice=find('賣價','賣出價');
+  const kBuyPrice =find('買價','買入價');
+  const kQty     =find('數量','成交數量','股數');
+  const kCostBase=find('沖銷原始成本','原始成本');
+  const kFee     =find('手續費');
+  const kTax     =find('交易稅');
+  const kInterest=find('融資券利息','利息','融資利息');
+  const kSsf     =find('融券手續費','券費');
+  const kPnl     =find('盈虧','損益','已實現損益');
+  const kAdj     =find('調整金額');
+  // 委託書號 / 交易類別 在賣/買兩側各出現一次（XLSX 會自動加 _1 等後綴）
+  const orderKeys=allKeys.filter(k=>k==='委託書號'||/^委託書號[_\s]?\d*$/.test(k));
+  const catKeys  =allKeys.filter(k=>k==='交易類別'||/^交易類別[_\s]?\d*$/.test(k));
   for(const r of rows){
-    const code=String(r['代號']||'').replace(/\s/g,'');if(!code||code==='代號')continue;
-    const sd=ed(r['賣出日期']||''),bd=ed(r['買入日期']||'');
+    const code=String(r[kCode]||'').replace(/\s/g,'');if(!code||code==='代號')continue;
+    const sd=ed(r[kSellDate]||''),bd=ed(r[kBuyDate]||'');
     if(!sd&&!bd)continue;
-    // Handle duplicate column names: 委託書號 appears twice (sell/buy), 交易類別 appears twice
-    const keys=Object.keys(r);
-    const orderKeys=keys.filter(k=>k==='委託書號'||/^委託書號[_\s]?\d*$/.test(k));
-    const catKeys  =keys.filter(k=>k==='交易類別'||/^交易類別[_\s]?\d*$/.test(k));
     const sellOrder=String(r[orderKeys[0]]||'').trim();
     const buyOrder =String(r[orderKeys[1]]||'').trim();
     const catSell  =String(r[catKeys[0]]||'').trim();
     const catBuy   =String(r[catKeys[1]]||catSell).trim();
-    const pv=pn(r['盈虧']);
+    const pv=pn(r[kPnl]);
     if(['追繳','現償','匯撥'].includes(catSell))continue;
     if(!pv&&!sd)continue;
     // Dedup key: sellOrder+buyOrder is unique per trade pair in the broker file
     const _dupKey=`${code}|${sd}|${sellOrder}|${bd}|${buyOrder}`;
     out.push({
-      code, name:String(r['名稱']||'').trim(),
-      sellDate:sd, sellOrder, catSell, sellPrice:pn(r['賣價']),
-      buyDate:bd,  buyOrder,  catBuy,  buyPrice:pn(r['買價']),
-      qty:pn(r['數量']),
-      costBase:pn(r['沖銷原始成本']),
-      fee:pn(r['手續費']), tax:pn(r['交易稅']),
-      interest:pn(r['融資券利息']),
-      ssf:pn(r['融券手續費']),
+      code, name:String(r[kName]||'').trim(),
+      sellDate:sd, sellOrder, catSell, sellPrice:pn(r[kSellPrice]),
+      buyDate:bd,  buyOrder,  catBuy,  buyPrice:pn(r[kBuyPrice]),
+      qty:pn(r[kQty]),
+      costBase:pn(r[kCostBase]),
+      fee:pn(r[kFee]), tax:pn(r[kTax]),
+      interest:pn(r[kInterest]),
+      ssf:pn(r[kSsf]),
       pnl:pv,
-      adj:pn(r['調整金額']),
+      adj:pn(r[kAdj]),
       _dupKey,
     });
   }
@@ -817,44 +884,21 @@ function normP(rows){
 function normUR(rows){
   const out=[];
   if(!rows.length)return out;
+  const find=makeFindKey(rows);
   const allKeys=Object.keys(rows[0]||{});
-  // 標頭比對前先去除空白/換行/全形空白，避免「名稱 」「股票\n名稱」類變體抓不到
-  const norm=s=>String(s||'').replace(/[\s　]/g,'');
-  const findKey=(...labels)=>{
-    const N=labels.map(norm).filter(Boolean);
-    // 1. 標頭鍵正規化後完全比對
-    for(const k of allKeys){if(N.includes(norm(k)))return k;}
-    // 2. 前 3 列 cell 值完全比對（處理合併標頭：'名稱' 落在第二列 __EMPTY 欄）
-    for(let i=0;i<Math.min(rows.length,3);i++){
-      for(const k of allKeys){if(N.includes(norm(rows[i][k])))return k;}
-    }
-    // 3. 標頭鍵子字串比對（'股票名稱' 含 '名稱' 等變體）
-    for(const k of allKeys){
-      const nk=norm(k);
-      if(nk&&N.some(n=>nk.includes(n)))return k;
-    }
-    // 4. 前 3 列 cell 值子字串比對
-    for(let i=0;i<Math.min(rows.length,3);i++){
-      for(const k of allKeys){
-        const nv=norm(rows[i][k]);
-        if(nv&&N.some(n=>nv.includes(n)))return k;
-      }
-    }
-    return null;
-  };
-  const kCode    =findKey('代號','股票代號','證券代號','股票','商品代號');
-  let   kName    =findKey('名稱','股票名稱','證券名稱','商品名稱','股名');
-  const kCat     =findKey('類別','交易類別','交易');
-  const kQty     =findKey('庫存數量','數量','股數');
-  const kPrice   =findKey('現價','市價','收盤價');
-  const kMkt     =findKey('市值','市場價值');
-  const kCost    =findKey('成本金額','成本','總成本');
-  const kAvg     =findKey('平均單價','均價','成本單價');
-  const kFee     =findKey('手續費');
-  const kTax     =findKey('交易稅');
-  const kInterest=findKey('利息費用','利息','利息\n費用');
-  const kPnl     =findKey('損益','未實現損益','損益金額');
-  const kRoi     =findKey('報酬率','報酬率%','獲利率');
+  const kCode    =find('代號','股票代號','證券代號','股票','商品代號');
+  let   kName    =find('名稱','股票名稱','證券名稱','商品名稱','股名');
+  const kCat     =find('類別','交易類別','交易');
+  const kQty     =find('庫存數量','數量','股數');
+  const kPrice   =find('現價','市價','收盤價');
+  const kMkt     =find('市值','市場價值');
+  const kCost    =find('成本金額','成本','總成本');
+  const kAvg     =find('平均單價','均價','成本單價');
+  const kFee     =find('手續費');
+  const kTax     =find('交易稅');
+  const kInterest=find('利息費用','利息','利息\n費用');
+  const kPnl     =find('損益','未實現損益','損益金額');
+  const kRoi     =find('報酬率','報酬率%','獲利率');
   // 仍找不到「名稱」欄時，券商表多半把名稱緊接在代號右邊，取代號欄的下一欄當保險
   if(!kName&&kCode){
     const idx=allKeys.indexOf(kCode);
