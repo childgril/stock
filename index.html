@@ -721,11 +721,13 @@ function parseFile(file,which){
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:true});
       if(which==='t'){
-        tradesRaw=normT(rows);
-        if(!tradesRaw.length){
-          setEmpty('dz-t','lbl-t','⚠️ 交易明細：抓不到資料，請確認檔案格式');
-          addLog(`❌ 交易明細：解析後 0 筆。請確認檔案含「成交日期」「股票代號」「買/賣」等欄位（檔案欄位：${headerHint(rows)}）`);
+        const parsedT=normT(rows);
+        if(!parsedT.length){
+          // 不覆蓋 tradesRaw，保留舊資料
+          addLog(`❌ 交易明細：解析後 0 筆，原有資料保留。請確認含「成交日期」「股票代號」「買/賣」等欄位（檔案欄位：${headerHint(rows)}）`);
+          toast('⚠️ 交易明細：抓不到資料，請確認檔案格式');
         }else{
+          tradesRaw=parsedT;
           localStorage.setItem(LS().t,JSON.stringify(tradesRaw));
           setLoaded('dz-t','lbl-t',`✓ 交易明細 ${tradesRaw.length} 筆`);
           addLog(`✅ 交易明細：${tradesRaw.length} 筆`);
@@ -769,7 +771,8 @@ function parseFile(file,which){
 function setLoaded(dz,lbl,txt){document.getElementById(dz).classList.add('loaded');document.getElementById(lbl).textContent=txt;}
 function setEmpty(dz,lbl,txt){const el=document.getElementById(dz);if(el)el.classList.remove('loaded');document.getElementById(lbl).textContent=txt;}
 function headerHint(rows){return Object.keys(rows[0]||{}).filter(k=>!/^__EMPTY/.test(k)).slice(0,8).join('、')||'(空白)';}
-function updBtn(){document.getElementById('btn-run').disabled=!(tradesRaw.length&&pnlRaw.length);}
+// 交易明細（①）選填；有已實現損益表（②）就能核對
+function updBtn(){document.getElementById('btn-run').disabled=!pnlRaw.length;}
 
 // ═══════════════════════════════════════════════
 // NORMALIZE
@@ -783,18 +786,24 @@ function makeFindKey(rows){
   const norm=s=>String(s||'').replace(/[\s　]/g,'');
   return (...labels)=>{
     const N=labels.map(norm).filter(Boolean);
+    // 1. 標頭鍵完全比對（去空白後）
     for(const k of allKeys){if(N.includes(norm(k)))return k;}
+    // 2. 前 3 列 cell 值完全比對（處理合併標頭：標頭文字落在第二列）
     for(let i=0;i<Math.min(rows.length,3);i++){
       for(const k of allKeys){if(N.includes(norm(rows[i][k])))return k;}
     }
-    for(const k of allKeys){
-      const nk=norm(k);
-      if(nk&&N.some(n=>nk.includes(n)))return k;
-    }
-    for(let i=0;i<Math.min(rows.length,3);i++){
+    // 3~4. 子字串 fallback：限 label >= 2 字，避免「別」「交易」等短字誤配到其他欄
+    const Nlong=N.filter(n=>n.length>=2);
+    if(Nlong.length){
       for(const k of allKeys){
-        const nv=norm(rows[i][k]);
-        if(nv&&N.some(n=>nv.includes(n)))return k;
+        const nk=norm(k);
+        if(nk&&Nlong.some(n=>nk.includes(n)))return k;
+      }
+      for(let i=0;i<Math.min(rows.length,3);i++){
+        for(const k of allKeys){
+          const nv=norm(rows[i][k]);
+          if(nv&&Nlong.some(n=>nv.includes(n)))return k;
+        }
       }
     }
     return null;
@@ -807,14 +816,14 @@ function normT(rows){
   const kDate    =find('成交日期','交易日期','日期');
   const kCode    =find('股票代號','證券代號','代號','商品代號','股票');
   const kName    =find('名稱','股票名稱','證券名稱','商品名稱');
-  const kBs      =find('買／賣','買/賣','買賣別','買賣','別');
-  const kPrice   =find('單價','成交價','價格');
-  const kQty     =find('成交數量','數量','股數');
-  const kFee     =find('手續費');
-  const kTax     =find('交易稅');
-  const kInterest=find('融資券利息','利息','融資利息');
-  const kSsf     =find('融券手續費','券費');
-  const kCat     =find('交易類別','類別','交易');
+  const kBs      =find('買／賣','買/賣','買賣別','買賣別類','買賣');
+  const kPrice   =find('單價','成交價','成交單價','價格');
+  const kQty     =find('成交數量','數量','成交股數','股數');
+  const kFee     =find('手續費','交易手續費');
+  const kTax     =find('交易稅','證交稅');
+  const kInterest=find('融資券利息','融資利息','利息費用','利息');
+  const kSsf     =find('融券手續費','融券費');
+  const kCat     =find('交易類別','交易種類','有價證券類別');
   for(const r of rows){
     const dr=r[kDate]||'';if(!dr||!/\d/.test(String(dr)))continue;
     const code=String(r[kCode]||'').replace(/\s/g,'');if(!code)continue;
@@ -963,7 +972,7 @@ function pk(p){return Math.round(parseFloat(p)*100);}
 // MATCH ENGINE
 // ═══════════════════════════════════════════════
 function runMatch(showToast=true){
-  if(!tradesRaw.length||!pnlRaw.length){toast('請先上傳兩份檔案');nav('import');return;}
+  if(!pnlRaw.length){toast('請先上傳已實現損益表（②）');nav('import');return;}
   const idx={};
   for(const t of tradesRaw){
     const k1=`${t.code}|${t.date}|${pk(t.price)}|${t.bs}`;
