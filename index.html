@@ -486,12 +486,12 @@ input[type=file]{display:none;}
   <div class="upload-grid">
     <div class="uc"><div class="uc-hdr"><div class="uc-num">1</div><h3>交易明細</h3></div>
       <div class="uc-desc">需含：成交日期、代號、名稱、買/賣、單價、交易類別、融資券利息、融券手續費</div>
-      <div class="dz" id="dz-t" onclick="document.getElementById('fi-t').click()" ondragover="dov(event,'dz-t')" ondragleave="dlv('dz-t')" ondrop="ddr(event,'t')">
+      <div class="dz" id="dz-t" onclick="pickFile('t')" ondragover="dov(event,'dz-t')" ondragleave="dlv('dz-t')" ondrop="ddr(event,'t')">
         <div class="di">📤</div><p id="lbl-t">拖放或點擊上傳 xlsx / csv</p></div>
       <input type="file" id="fi-t" accept=".xlsx,.csv,.xls" onchange="hf(event,'t')"/></div>
     <div class="uc"><div class="uc-hdr"><div class="uc-num">2</div><h3>已實現損益表</h3></div>
       <div class="uc-desc">需含：代號、名稱、賣出日期、買入日期、交易類別、賣價、買價、數量、手續費、交易稅、融資券利息、融券手續費、盈虧</div>
-      <div class="dz" id="dz-p" onclick="document.getElementById('fi-p').click()" ondragover="dov(event,'dz-p')" ondragleave="dlv('dz-p')" ondrop="ddr(event,'p')">
+      <div class="dz" id="dz-p" onclick="pickFile('p')" ondragover="dov(event,'dz-p')" ondragleave="dlv('dz-p')" ondrop="ddr(event,'p')">
         <div class="di">📋</div><p id="lbl-p">拖放或點擊上傳 xlsx / csv</p></div>
       <input type="file" id="fi-p" accept=".xlsx,.csv,.xls" onchange="hf(event,'p')"/></div>
   </div>
@@ -504,7 +504,7 @@ input[type=file]{display:none;}
       <input type="date" id="ur-date" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 9px;border-radius:var(--r-sm);font-size:13px;font-family:var(--mono);"/>
       <button class="btn btn-outline btn-sm" onclick="setUrDateToday()">今天</button>
     </div>
-    <div class="dz" id="dz-ur" onclick="document.getElementById('fi-ur').click()" ondragover="dov(event,'dz-ur')" ondragleave="dlv('dz-ur')" ondrop="ddr(event,'ur')">
+    <div class="dz" id="dz-ur" onclick="pickFile('ur')" ondragover="dov(event,'dz-ur')" ondragleave="dlv('dz-ur')" ondrop="ddr(event,'ur')">
       <div class="di">📊</div><p id="lbl-ur">拖放或點擊上傳未實現 xlsx</p></div>
     <input type="file" id="fi-ur" accept=".xlsx,.csv,.xls" onchange="hf(event,'ur')"/>
     <div id="ur-snap-list" style="margin-top:10px;font-size:12px;color:var(--muted);"></div>
@@ -591,6 +591,8 @@ function loadAcct(){
   tradesRaw=[];pnlRaw=[];matchedRows=[];userEdits={};urSnaps={};
   allMonths=[];selectedMonths=new Set();
   ['dz-t','dz-p','dz-ur'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('loaded');});
+  // 切帳戶時把上次選的檔案清掉，否則重新選同一個檔不會觸發 onchange
+  ['fi-t','fi-p','fi-ur'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('lbl-t').textContent='拖放或點擊上傳 xlsx / csv';
   document.getElementById('lbl-p').textContent='拖放或點擊上傳 xlsx / csv';
   document.getElementById('lbl-ur').textContent='拖放或點擊上傳未實現 xlsx';
@@ -708,6 +710,9 @@ function dov(e,id){e.preventDefault();document.getElementById(id).classList.add(
 function dlv(id){document.getElementById(id).classList.remove('drag');}
 function ddr(e,w){e.preventDefault();dlv('dz-'+w);const f=e.dataTransfer.files[0];if(f)parseFile(f,w);}
 function hf(e,w){const f=e.target.files[0];if(f)parseFile(f,w);}
+// 開檔前先把 input value 清空，否則使用者再選同一個檔（例如切帳戶後上傳同名檔）
+// onchange 不會再觸發，會以為「點了沒反應、匯不進去」。
+function pickFile(w){const fi=document.getElementById('fi-'+w);if(fi){fi.value='';fi.click();}}
 function parseFile(file,which){
   const reader=new FileReader();
   reader.onload=ev=>{
