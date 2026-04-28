@@ -813,29 +813,48 @@ function normUR(rows){
   const out=[];
   if(!rows.length)return out;
   const allKeys=Object.keys(rows[0]||{});
-  const findKey=(label,...fallbacks)=>{
-    if(allKeys.includes(label))return label;
+  // 標頭比對前先去除空白/換行/全形空白，避免「名稱 」「股票\n名稱」類變體抓不到
+  const norm=s=>String(s||'').replace(/[\s　]/g,'');
+  const findKey=(...labels)=>{
+    const N=labels.map(norm).filter(Boolean);
+    // 1. 標頭鍵正規化後完全比對
+    for(const k of allKeys){if(N.includes(norm(k)))return k;}
+    // 2. 前 3 列 cell 值完全比對（處理合併標頭：'名稱' 落在第二列 __EMPTY 欄）
+    for(let i=0;i<Math.min(rows.length,3);i++){
+      for(const k of allKeys){if(N.includes(norm(rows[i][k])))return k;}
+    }
+    // 3. 標頭鍵子字串比對（'股票名稱' 含 '名稱' 等變體）
+    for(const k of allKeys){
+      const nk=norm(k);
+      if(nk&&N.some(n=>nk.includes(n)))return k;
+    }
+    // 4. 前 3 列 cell 值子字串比對
     for(let i=0;i<Math.min(rows.length,3);i++){
       for(const k of allKeys){
-        if(String(rows[i][k]||'').trim()===label)return k;
+        const nv=norm(rows[i][k]);
+        if(nv&&N.some(n=>nv.includes(n)))return k;
       }
     }
-    for(const f of fallbacks){if(allKeys.includes(f))return f;}
-    return label;
+    return null;
   };
-  const kCode    =findKey('代號','股票代號','股票');
-  const kName    =findKey('名稱','股票名稱','商品名稱');
+  const kCode    =findKey('代號','股票代號','證券代號','股票','商品代號');
+  let   kName    =findKey('名稱','股票名稱','證券名稱','商品名稱','股名');
   const kCat     =findKey('類別','交易類別','交易');
-  const kQty     =findKey('庫存數量','數量');
-  const kPrice   =findKey('現價','市價');
-  const kMkt     =findKey('市值');
-  const kCost    =findKey('成本金額','成本');
-  const kAvg     =findKey('平均單價','均價');
+  const kQty     =findKey('庫存數量','數量','股數');
+  const kPrice   =findKey('現價','市價','收盤價');
+  const kMkt     =findKey('市值','市場價值');
+  const kCost    =findKey('成本金額','成本','總成本');
+  const kAvg     =findKey('平均單價','均價','成本單價');
   const kFee     =findKey('手續費');
   const kTax     =findKey('交易稅');
   const kInterest=findKey('利息費用','利息','利息\n費用');
-  const kPnl     =findKey('損益','未實現損益');
-  const kRoi     =findKey('報酬率','報酬率%');
+  const kPnl     =findKey('損益','未實現損益','損益金額');
+  const kRoi     =findKey('報酬率','報酬率%','獲利率');
+  // 仍找不到「名稱」欄時，券商表多半把名稱緊接在代號右邊，取代號欄的下一欄當保險
+  if(!kName&&kCode){
+    const idx=allKeys.indexOf(kCode);
+    if(idx>=0&&idx+1<allKeys.length)kName=allKeys[idx+1];
+  }
   for(const r of rows){
     const code=String(r[kCode]||'').replace(/\s/g,'').trim();
     if(!code||code.length<4||isNaN(code[0]))continue;
